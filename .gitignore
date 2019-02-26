@@ -1,0 +1,7 @@
+/.idea
+/target
+/project/project
+/project/target
+/.ivy2
+/.sbt
+/.ssh

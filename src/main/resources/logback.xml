@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="info-file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${JIRA_REPORTS_LOGS_PATH:-logs}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${JIRA_REPORTS_LOGS_PATH:-logs}/info.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxHistory>21</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>%d{MM/dd HH:mm:ss.SSS} %-5level %logger{0}: %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="errors-file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${JIRA_REPORTS_LOGS_PATH:-logs}/errors.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${JIRA_REPORTS_LOGS_PATH:-logs}/errors.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>2MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>%d{MM/dd HH:mm:ss.SSS} %-5level %logger{0}: %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${CONSOLE_LOGGING_LEVEL:-INFO}</level>
+        </filter>
+        <target>System.out</target>
+        <encoder>
+            <pattern>%date{HH:mm:ss.SSS} %-5level %logger{0}: %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="akka.http.impl" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="akka.io.SimpleDnsManager" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="akka.io.TcpOutgoingConnection" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="com.typesafe.sslconfig.ssl.DefaultHostnameVerifier" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="com.zaxxer.hikari" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="slick.compiler" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="slick.relational" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="slick.ast" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="slick.jdbc" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="org.mongodb.driver.connection" level="${LOG_LEVEL:-WARN}"/>
+    <logger name="org.mongodb.driver.cluster" level="${LOG_LEVEL:-WARN}"/>
+
+    <root level="${LOG_LEVEL:-DEBUG}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="info-file"/>
+        <appender-ref ref="errors-file"/>
+    </root>
+
+</configuration>
