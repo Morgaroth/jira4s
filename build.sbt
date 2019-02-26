@@ -44,17 +44,17 @@ libraryDependencies ++= Seq(
   //@formatter:on
 )
 
-publishArtifact in Test := false,
+publishArtifact in Test := false
 
 logBuffered := false
 
 // Bintray
-licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git")
 
 // Release
-releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
-releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
+releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]"
+releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]"
 
 validate := Def.task {
   (Test / test).value
