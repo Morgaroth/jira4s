@@ -45,6 +45,7 @@ val core = project
   )
 
 val sttp = project.in(file("sttp")).dependsOn(core)
+  .settings(commonSettings: _*)
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
@@ -53,6 +54,7 @@ val sttp = project.in(file("sttp")).dependsOn(core)
   )
 
 val akka = project.in(file("akka-http")).dependsOn(core)
+  .settings(commonSettings: _*)
   .settings(
     name := "jira4s-akka-http",
     libraryDependencies ++= Seq(
