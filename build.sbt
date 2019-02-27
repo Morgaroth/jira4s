@@ -18,6 +18,9 @@ val commonSettings = Seq(
   javaOptions in Test += "-Duser.timezone=UTC",
   logBuffered := false,
 
+  // Bintray
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
 )
 
 //validate := Def.task {
