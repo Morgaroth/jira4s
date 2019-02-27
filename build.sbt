@@ -4,59 +4,66 @@ val circeVersion = "0.8.0"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
-enablePlugins(DependencyGraphPlugin)
+val commonSettings = Seq(
+  organization := "io.morgaroth",
+  scalaVersion := "2.12.8",
 
-name := "jira-client"
-organization := "io.morgaroth"
-scalaVersion := "2.12.8"
+  resolvers ++= Seq(
+    "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
+    Resolver.bintrayRepo("morgaroth", "maven"),
+  ),
+  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
 
-resolvers ++= Seq(
-  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
-  Resolver.bintrayRepo("morgaroth", "maven"),
+  javaOptions in Test += "-Duser.timezone=UTC",
+  logBuffered := false,
+
 )
 
-scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+//validate := Def.task {
+//  (Test / test).value
+//  //      tut.value
+//}.value
 
-fork in Test := true
+val core = project
+  .settings(commonSettings: _*)
+  .settings(
+    name := "jira4s-core",
+    libraryDependencies ++= Seq(
+      "joda-time" % "joda-time" % "2.10.1",
+      "org.typelevel" %% "cats-core" % "1.0.0",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
+      "com.typesafe" % "config" % "1.3.3",
 
-javaOptions in Test += "-Duser.timezone=UTC"
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+    )
+  )
 
-libraryDependencies ++= Seq(
-  //@formatter:off
-  "com.iheart"              %% "ficus"          % "1.4.1",
-  "com.github.nscala-time"  %% "nscala-time"    % "2.16.0",
+val sttp = project.in(file("sttp")).dependsOn(core)
+  .settings(
+    name := "jira4s-sttp",
+    libraryDependencies ++= Seq(
 
-  "com.typesafe.akka"       %% "akka-http"      % akkaHttpVer,
-  "com.typesafe.akka"       %% "akka-slf4j"     % akkaV,
-  "com.typesafe.akka"       %% "akka-stream"    % akkaV,
+    )
+  )
 
-  "ch.megard"               %% "akka-http-cors"   % "0.1.11",
-  "de.heikoseeberger"       %% "akka-http-circe"  % "1.18.0",
+val akka = project.in(file("akka-http")).dependsOn(core)
+  .settings(
+    name := "jira4s-akka-http",
+    libraryDependencies ++= Seq(
 
-  "org.typelevel" %% "cats-core"      % "1.0.0",
-  "io.circe"      %% "circe-core"     % circeVersion,
-  "io.circe"      %% "circe-generic"  % circeVersion,
-  "io.circe"      %% "circe-parser"   % circeVersion,
+    )
+  )
 
-  "com.typesafe.scala-logging"    %% "scala-logging" % "3.7.2",
+val root = project.in(file(".")).aggregate(core, sttp, akka)
+  .settings(
+    publish := {},
+    // Bintray
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+    bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
 
-  "org.scalatest" %% "scalatest" % "3.0.4" % "test"
-  //@formatter:on
-)
-
-publishArtifact in Test := false
-
-logBuffered := false
-
-// Bintray
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git")
-
-// Release
-releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]"
-releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]"
-
-validate := Def.task {
-  (Test / test).value
-  //      tut.value
-}.value
+    // Release
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
+    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
+  )

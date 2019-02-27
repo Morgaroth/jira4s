@@ -1,6 +1,5 @@
 package io.morgaroth.jiraclient
 
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax._
@@ -74,5 +73,3 @@ trait CommonDateSerializer {
 }
 
 object CommonDateSerializer extends CommonDateSerializer
-
-trait HttpCirceSupport extends ProjectsJsonFormats with FailFastCirceSupport
