@@ -65,9 +65,6 @@ val akka = project.in(file("akka-http")).dependsOn(core)
 val root = project.in(file(".")).aggregate(core, sttp, akka)
   .settings(
     publish := {},
-    // Bintray
-    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
 
     // Release
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
