@@ -1,4 +1,4 @@
-package com.williamhill.jirareports.utilities
+package io.morgaroth.jiraclient
 
 import com.typesafe.scalalogging.{LazyLogging, Logger}
 
