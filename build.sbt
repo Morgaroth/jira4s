@@ -1,6 +1,7 @@
 val akkaV = "2.5.6"
 val akkaHttpVer = "10.0.9"
-val circeVersion = "0.8.0"
+
+val circeVersion = "0.11.1"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
