@@ -1,12 +1,15 @@
 package io.morgaroth.jiraclient
 
+import cats.Monad
+import cats.data.EitherT
+import cats.syntax.either._
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax._
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-import scala.language.implicitConversions
+import scala.language.{higherKinds, implicitConversions}
 import scala.util.Try
 
 trait ProjectsJsonFormats extends JodaCodec {
@@ -17,6 +20,9 @@ trait ProjectsJsonFormats extends JodaCodec {
 
   object MJson {
     def read[T](str: String)(implicit d: Decoder[T]): Either[Error, T] = decode[T](str)
+
+    def readT[F[_], T](str: String)(implicit d: Decoder[T], m: Monad[F]): EitherT[F, JiraError, T] =
+      EitherT.fromEither(decode[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e)))
 
     def write[T](value: T)(implicit d: Encoder[T]): String = value.asJson.noSpaces
 

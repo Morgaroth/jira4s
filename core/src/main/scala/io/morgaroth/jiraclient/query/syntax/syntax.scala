@@ -47,6 +47,8 @@ object Methods {
 
   object Get extends Method
 
+  object Post extends Method
+
 }
 
 case class JiraRequest(
@@ -54,7 +56,8 @@ case class JiraRequest(
                         authToken: String,
                         method: Method,
                         path: String,
-                        query: List[JiraQuery]
+                        query: List[JiraQuery],
+                        payload: Option[String],
                       ) {
   lazy val render: String = {
     val base = s"$service/$path"
@@ -65,5 +68,5 @@ case class JiraRequest(
 }
 
 object JiraRequest {
-  def forServer(cfg: JiraConfig): (Method, String, List[JiraQuery]) => JiraRequest = new JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, _, _, _)
+  def forServer(cfg: JiraConfig): (Method, String, List[JiraQuery], Option[String]) => JiraRequest = new JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, _, _, _, _)
 }

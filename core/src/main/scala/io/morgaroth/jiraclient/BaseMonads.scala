@@ -4,7 +4,7 @@ trait JiraError
 
 case class RequestingError(description: String, cause: Throwable) extends JiraError
 
-case class HttpError(statusCode: Int, description: String, errorBody: Option[Array[Byte]]) extends JiraError
+case class HttpError(statusCode: Int, description: String, errorBody: Option[String]) extends JiraError
 
 case class MarshallingError(description: String, cause: Throwable) extends JiraError
 

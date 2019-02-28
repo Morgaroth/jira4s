@@ -36,6 +36,49 @@ case class JiraWorklogs(startAt: Int, maxResults: Int, total: Int, worklogs: Vec
 
 case class JiraUser(displayName: Option[String], name: String, emailAddress: String)
 
+case class RemoteIssueLinkIdentifies(id: Long, self: String)
+
+case class JiraRemoteLink(
+                           id: Option[Int],
+                           self: String,
+                           globalId: Option[String],
+                           application: Option[JiraApplication],
+                           relationship: Option[String],
+                           `object`: RemoteLinkObject
+                         )
+
+case class CreateJiraRemoteLink(
+                                 globalId: String,
+                                 application: Option[JiraApplication],
+                                 relationship: Option[String],
+                                 `object`: RemoteLinkObject
+                               )
+
+case class JiraApplication(`type`: Option[String], name: Option[String])
+
+case class RemoteLinkObject(
+                             url: String,
+                             title: String,
+                             summary: Option[String],
+                             icon: Option[Icon],
+                             status: Option[JiraRemoteLinkStatus]
+                           )
+
+case class JiraRemoteLinkStatus(resolved: Option[Boolean], icon: Option[Icon])
+
+case class Icon(
+                 url16x16: Option[String],
+                 title: Option[String],
+                 link: Option[String],
+               )
+
+trait Relationship {
+  def raw: String
+}
+
+case object LinksTo extends Relationship {
+  val raw = "links-to"
+}
 
 // Tempo models
 

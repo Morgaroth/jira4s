@@ -5,16 +5,14 @@ import cats.data.EitherT
 import cats.instances.future.catsStdInstancesForFuture
 import cats.syntax.either._
 import com.softwaremill.sttp._
-import io.circe.generic.auto._
-import io.morgaroth.jiraclient.ProjectsJsonFormats.MJson
+import com.typesafe.scalalogging.LazyLogging
 import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.query.syntax.JiraRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-
-class SttpJiraAPI(val config: JiraConfig)(implicit ex: ExecutionContext) extends JiraRestAPI[Future, String] {
+class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext) extends JiraRestAPI[Future] with LazyLogging {
 
   override implicit val m: Monad[Future] = implicitly[Monad[Future]]
 
@@ -22,33 +20,26 @@ class SttpJiraAPI(val config: JiraConfig)(implicit ex: ExecutionContext) extends
 
   override def invokeRequest(requestData: JiraRequest): EitherT[Future, JiraError, String] = {
     val u = requestData.render
-    val request = sttp.get(uri"$u").headers("Authorization" -> requestData.authToken)
+    val requestWithoutPayload = sttp.method(requestData.method, uri"$u").headers(
+      "Authorization" -> requestData.authToken,
+      "Accept" -> "application/json",
+      "User-Agent" -> "curl/7.61.0",
+    )
+
+    val request = requestData.payload.map { rawPayload =>
+      requestWithoutPayload.body(rawPayload).contentType("application/json")
+    }.getOrElse(requestWithoutPayload)
+
+    if (apiConfig.debug) logger.debug(s"request to send: $request")
 
     val response = request
       .send()
       .toEither.leftMap[JiraError](RequestingError("try-http-backend-left", _))
-      .flatMap {
-        response => response.rawErrorBody.leftMap(error => HttpError(response.code.intValue(), "http-response-error", Some(error)))
+      .flatMap { response =>
+        if (apiConfig.debug) logger.debug(s"received request: $response")
+        response.rawErrorBody.leftMap(error => HttpError(response.code.intValue(), "http-response-error", Some(new String(error, "UTF-8"))))
       }
 
     EitherT.fromEither(response)
-  }
-
-  override protected def deserializeListAllProjects(in: String): EitherT[Future, JiraError, Vector[JiraProject]] = {
-    EitherT.fromEither(
-      MJson.read[Vector[JiraProject]](in).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e))
-    )
-  }
-
-  override protected def deserializeJiraIssue(in: String): EitherT[Future, JiraError, JiraIssue] = {
-    EitherT.fromEither(
-      MJson.read[JiraIssue](in).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e))
-    )
-  }
-
-  override protected def deserializePaginatedProjects(in: String): EitherT[Future, JiraError, JiraProjects] = {
-    EitherT.fromEither(
-      MJson.read[JiraProjects](in).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e))
-    )
   }
 }

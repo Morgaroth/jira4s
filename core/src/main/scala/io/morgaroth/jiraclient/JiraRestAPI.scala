@@ -2,12 +2,15 @@ package io.morgaroth.jiraclient
 
 import cats.Monad
 import cats.data.EitherT
+import cats.syntax.option._
+import io.circe.generic.auto._
+import io.morgaroth.jiraclient.ProjectsJsonFormats.MJson
 import io.morgaroth.jiraclient.query.syntax.{JiraRequest, Methods}
 
 import scala.language.{higherKinds, postfixOps}
 
-trait JiraRestAPI[F[_], T] {
-  val API = "rest/api/3/"
+trait JiraRestAPI[F[_]] {
+  val API = "rest/api/2/"
 
   implicit def m: Monad[F]
 
@@ -15,13 +18,7 @@ trait JiraRestAPI[F[_], T] {
 
   private lazy val regGen = JiraRequest.forServer(config)
 
-  protected def invokeRequest(request: JiraRequest): EitherT[F, JiraError, T]
-
-  protected def deserializeListAllProjects(in: T): EitherT[F, JiraError, Vector[JiraProject]]
-
-  protected def deserializeJiraIssue(in: T): EitherT[F, JiraError, JiraIssue]
-
-  protected def deserializePaginatedProjects(in: T): EitherT[F, JiraError, JiraProjects]
+  protected def invokeRequest(request: JiraRequest): EitherT[F, JiraError, String]
 
   /**
     * GET /rest/api/3/project/search
@@ -29,8 +26,8 @@ trait JiraRestAPI[F[_], T] {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-project-search-get
     */
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
-    val req = regGen(Methods.Get, API + "projects/search", Nil)
-    invokeRequest(req).flatMap(deserializeListAllProjects)
+    val req = regGen(Methods.Get, API + "projects/search", Nil, None)
+    invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
   }
 
   /** GET /rest/api/3/issue/{issueIdOrKey}
@@ -38,8 +35,34 @@ trait JiraRestAPI[F[_], T] {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-get
     */
   def getIssue(key: String): EitherT[F, JiraError, JiraIssue] = {
-    val req = regGen(Methods.Get, API + "all-projects", Nil)
-    invokeRequest(req).flatMap(deserializeJiraIssue)
+    val req = regGen(Methods.Get, API + s"issue/$key", Nil, None)
+    invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
+  }
+
+  /** GET /rest/api/2/issue/{issueIdOrKey}/remotelink
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-get
+    */
+  def getIssueRemoteLinks(key: String): EitherT[F, JiraError, Vector[JiraRemoteLink]] = {
+    val req = regGen(Methods.Get, API + s"issue/$key/remotelink", Nil, None)
+    invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraRemoteLink]])
+  }
+
+  /** POST /rest/api/2/issue/{issueIdOrKey}/remotelink
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-post
+    */
+  def createOrUpdateIssueLink(
+                               issueKey: String, linkId: String,
+                               link: String, title: String, resolved: Boolean,
+                               icon: Option[Icon] = None, relationship: Option[Relationship] = None)
+  : EitherT[F, JiraError, RemoteIssueLinkIdentifies] = {
+    val req = regGen(Methods.Post, API + s"issue/$issueKey/remotelink", Nil, MJson.write(
+      CreateJiraRemoteLink(link, None, relationship.map(_.raw),
+        RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
+    ).some)
+
+    invokeRequest(req).flatMap(MJson.readT[F, RemoteIssueLinkIdentifies])
   }
 }
 
