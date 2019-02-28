@@ -2,6 +2,7 @@ package io.morgaroth.jiraclient.sttpbackend
 
 import cats.Monad
 import cats.data.EitherT
+import cats.instances.future.catsStdInstancesForFuture
 import cats.syntax.either._
 import com.softwaremill.sttp._
 import io.circe.generic.auto._
@@ -9,10 +10,13 @@ import io.morgaroth.jiraclient.ProjectsJsonFormats.MJson
 import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.query.syntax.JiraRequest
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class SttpJiraAPI(val config: JiraConfig)(implicit val m: Monad[Future]) extends JiraRestAPI[Future, String] {
+
+class SttpJiraAPI(val config: JiraConfig)(implicit ex: ExecutionContext) extends JiraRestAPI[Future, String] {
+
+  override implicit val m: Monad[Future] = implicitly[Monad[Future]]
 
   implicit val backend: SttpBackend[Try, Nothing] = TryHttpURLConnectionBackend()
 
