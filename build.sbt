@@ -58,8 +58,10 @@ val akka = project.in(file("akka-http")).dependsOn(core)
     )
   )
 
-val root = project.in(file(".")).aggregate(core, sttp, akka)
+val jira4s = project.in(file(".")).aggregate(core, sttp, akka)
   .settings(
+    name := "jira4s",
+
     publish := {},
 
     validate := Def.task {

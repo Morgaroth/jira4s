@@ -49,6 +49,10 @@ object Methods {
 
   object Post extends Method
 
+  object Put extends Method
+
+  object Delete extends Method
+
 }
 
 case class JiraRequest(
