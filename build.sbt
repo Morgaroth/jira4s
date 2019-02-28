@@ -23,10 +23,6 @@ val commonSettings = Seq(
   bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
 )
 
-//validate := Def.task {
-//  (Test / test).value
-//  //      tut.value
-//}.value
 
 val core = project
   .settings(commonSettings: _*)
@@ -65,6 +61,11 @@ val akka = project.in(file("akka-http")).dependsOn(core)
 val root = project.in(file(".")).aggregate(core, sttp, akka)
   .settings(
     publish := {},
+
+    validate := Def.task {
+      (Test / test).value
+      //      tut.value
+    }.value,
 
     // Release
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
