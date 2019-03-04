@@ -22,14 +22,15 @@ trait ProjectsJsonFormats extends JodaCodec {
     def read[T](str: String)(implicit d: Decoder[T]): Either[Error, T] = decode[T](str)
 
     def readT[F[_], T](str: String)(implicit d: Decoder[T], m: Monad[F]): EitherT[F, JiraError, T] =
-      EitherT.fromEither(decode[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e)))
+      EitherT.fromEither(read[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e)))
 
-    def write[T](value: T)(implicit d: Encoder[T]): String = value.asJson.noSpaces
+    def write[T](value: T)(implicit d: Encoder[T]): String = Printer.noSpaces.copy(dropNullValues = true).pretty(value.asJson)
 
-    def writePretty[T](value: T)(implicit d: Encoder[T]): String = value.asJson.spaces2
+    def writePretty[T](value: T)(implicit d: Encoder[T]): String = printer.pretty(value.asJson)
   }
 
-  implicit val printer: Printer = Printer.spaces2
+  // keep all special settings with method write above
+  implicit val printer: Printer = Printer.spaces2.copy(dropNullValues = true)
 }
 
 object ProjectsJsonFormats extends ProjectsJsonFormats
