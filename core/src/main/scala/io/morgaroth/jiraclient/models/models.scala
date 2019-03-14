@@ -1,4 +1,4 @@
-package io.morgaroth.jiraclient
+package io.morgaroth.jiraclient.models
 
 import org.joda.time.DateTime
 
@@ -24,7 +24,7 @@ case class JiraIssueFields(project: JiraProject)
 
 case class JiraIssueFieldsWork(project: JiraProject, worklog: JiraWorklogs)
 
-case class JiraIssues(startAt: Int, maxResults: Int, total: Int, issues: Vector[JiraIssue]) extends JiraPaginatedResponse[JiraIssue] {
+case class JiraPaginatedIssues(startAt: Int, maxResults: Int, total: Int, isLast: Option[Boolean], issues: Vector[JiraIssue]) extends JiraPaginatedResponse[JiraIssue] {
   override def values: Vector[JiraIssue] = issues
 }
 

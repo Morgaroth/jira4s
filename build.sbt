@@ -15,7 +15,6 @@ val commonSettings = Seq(
   ),
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
 
-  javaOptions in Test += "-Duser.timezone=UTC",
   logBuffered := false,
 
   // Bintray

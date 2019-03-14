@@ -47,6 +47,8 @@ object JqlQEntry {
 
     def lt(right: Long): JqlQEntry = JqlLt(left, right.toString)
 
+    def ~(right: String): JqlQEntry = JqlLike(left, right)
+
     def ===(right: String): JqlQEntry = JqlEq(left, right)
 
     def ===(right: Int): JqlQEntry = JqlEq(left, right.toString)
@@ -79,7 +81,7 @@ case object JqlNothing extends JqlQEntry {
 }
 
 case class JqlEq(key: String, value: String) extends JqlQEntry {
-  override lazy val render: String = s"$key$space$equal$space$value"
+  override lazy val render: String = s"""$key$space$equal$space"$value""""
 }
 
 abstract class JqlOrd(key: String, value: String, op: String) extends JqlQEntry {
@@ -96,6 +98,11 @@ case class JqlLte(key: String, value: String) extends JqlOrd(key, value, "<=")
 
 case class JqlNEq(key: String, value: String) extends JqlQEntry {
   override lazy val render: String = s"$key$space!$equal$space$value"
+
+}
+
+case class JqlLike(key: String, value: String) extends JqlQEntry {
+  override lazy val render: String = s"""$key$space~$space"$value""""
 
 }
 

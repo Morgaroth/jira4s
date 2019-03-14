@@ -2,14 +2,17 @@ package io.morgaroth.jiraclient
 
 import cats.Monad
 import cats.data.EitherT
-import cats.syntax.option._
+import cats.implicits._
 import io.circe.generic.auto._
-import io.morgaroth.jiraclient.ProjectsJsonFormats.MJson
-import io.morgaroth.jiraclient.query.syntax.{JiraRequest, Methods}
+import io.morgaroth.jiraclient.marshalling.JiraMarshalling
+import io.morgaroth.jiraclient.models._
+import io.morgaroth.jiraclient.query.jql.syntax.JqlQEntry._
+import io.morgaroth.jiraclient.query.syntax._
+import org.joda.time.DateTime
 
 import scala.language.{higherKinds, postfixOps}
 
-trait JiraRestAPI[F[_]] {
+trait JiraRestAPI[F[_]] extends JiraMarshalling {
   val API = "rest/api/2/"
 
   implicit def m: Monad[F]
@@ -20,23 +23,67 @@ trait JiraRestAPI[F[_]] {
 
   protected def invokeRequest(request: JiraRequest): EitherT[F, JiraError, String]
 
+  type JiraRespT[A] = EitherT[F, JiraError, A]
+
   /**
-    * GET /rest/api/3/project/search
+    * GET /rest/api/2/project/search
     *
-    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-project-search-get
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-project-search-get
     */
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
     val req = regGen(Methods.Get, API + "projects/search", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
   }
 
-  /** GET /rest/api/3/issue/{issueIdOrKey}
+  /** GET /rest/api/2/issue/{issueIdOrKey}
     *
-    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-get
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-get
     */
   def getIssue(key: String): EitherT[F, JiraError, JiraIssue] = {
     val req = regGen(Methods.Get, API + s"issue/$key", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
+  }
+
+  /** GET /rest/api/2/issue/{issueIdOrKey}
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-search-get
+    * @see https://confluence.atlassian.com/jirasoftwarecloud/advanced-searching-764478330.html
+    */
+  def findIssues(projectKey: String)(
+    reporter: Option[String],
+    assignee: Option[String],
+    text: Option[String],
+    statuses: Set[IssueStatus],
+    createdAfter: Option[DateTime],
+  ): EitherT[F, JiraError, Vector[JiraIssue]] = {
+    val q = Jql(List(
+      assignee.map("assignee" === _),
+      reporter.map("reporter" === _),
+      text.map("text" ~ _),
+      if (statuses.nonEmpty) Some("status" in statuses.map(_.repr)) else None
+    ).flatten.reduce(_ and _) orderBy "created".asc)
+
+    def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
+      val req = regGen(Methods.Get, API + "/search",
+        List(q, JPage(start, 50)),
+        None
+      )
+      invokeRequest(req).flatMap(MJson.readT[F, JiraPaginatedIssues])
+    }
+
+    def getAll(startFrom: Int, acc: Vector[JiraIssue]): JiraRespT[Vector[JiraIssue]] = {
+      getPage(startFrom).flatMap { resp =>
+        val currentIssues = acc ++ resp.issues
+        val currentCnt = currentIssues.size
+        if (currentCnt > resp.total || resp.issues.isEmpty) {
+          currentIssues.pure[JiraRespT]
+        } else {
+          getAll(startFrom + resp.issues.length, currentIssues)
+        }
+      }
+    }
+
+    getAll(0, Vector.empty)
   }
 
   /** GET /rest/api/2/issue/{issueIdOrKey}/remotelink
