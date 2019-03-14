@@ -16,7 +16,9 @@ case class JiraProject(key: String, name: String)
 
 case class JiraProjects(startAt: Int, maxResults: Int, total: Int, values: Vector[JiraProject]) extends JiraPaginatedResponse[JiraProject]
 
-case class JiraIssue(id: String, self: String, key: String, fields: JiraIssueFields)
+case class JiraIssue(id: String, self: String, key: String, fields: JiraIssueFields) {
+  lazy val htmlSelf: String = self.replace("rest/api/2/issue", "browse").replace(id, key)
+}
 
 case class JiraIssueWithWorklog(id: String, self: String, key: String, fields: JiraIssueFieldsWork)
 
