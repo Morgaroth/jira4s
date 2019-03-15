@@ -64,7 +64,7 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
     ).flatten.reduce(_ and _) orderBy "created".asc)
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
-      val req = regGen(Methods.Get, API + "/search",
+      val req = regGen(Methods.Get, API + "search",
         List(q, JPage(start, 50)),
         None
       )
