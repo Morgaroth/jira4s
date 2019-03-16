@@ -22,7 +22,18 @@ case class JiraIssue(id: String, self: String, key: String, fields: JiraIssueFie
 
 case class JiraIssueWithWorklog(id: String, self: String, key: String, fields: JiraIssueFieldsWork)
 
-case class JiraIssueFields(project: JiraProject)
+case class JiraIssueFields(
+                            project: JiraProject,
+                            resolution: Option[JiraResolutionObj],
+                            labels: Set[String],
+                            description: Option[String],
+                            summary: String,
+                            status: JiraStatusObj,
+                            creator: JiraUser,
+                            assignee: Option[JiraUser],
+                            reporter: JiraUser,
+                            issuetype: JiraIssueType,
+                          )
 
 case class JiraIssueFieldsWork(project: JiraProject, worklog: JiraWorklogs)
 
@@ -30,13 +41,29 @@ case class JiraPaginatedIssues(startAt: Int, maxResults: Int, total: Int, isLast
   override def values: Vector[JiraIssue] = issues
 }
 
+case class JiraResolutionObj(self: String, id: String, description: String, name: String)
+
+case class JiraStatusObj(self: String, id: String, description: String, name: String, iconUrl: String, statusCategory: JiraStatusCategory)
+
+case class JiraStatusCategory(self: String, id: Long, key: String, colorName: String, name: String)
+
+case class JiraIssueType(self: String, id: String, description: String, iconUrl: String, name: String, subtask: Boolean)
+
 case class JiraWorklog(author: JiraUser, started: DateTime, timeSpentSeconds: Long, id: String)
 
 case class JiraWorklogs(startAt: Int, maxResults: Int, total: Int, worklogs: Vector[JiraWorklog]) extends JiraPaginatedResponse[JiraWorklog] {
   override def values: Vector[JiraWorklog] = worklogs
 }
 
-case class JiraUser(displayName: Option[String], name: String, emailAddress: String)
+case class JiraUser(
+                     self: String,
+                     name: String,
+                     key: String,
+                     emailAddress: String,
+                     displayName: Option[String],
+                     active: Boolean,
+                     timeZone: String,
+                   )
 
 case class RemoteIssueLinkIdentifies(id: Long, self: String)
 

@@ -36,6 +36,8 @@ val core = project
       "com.typesafe" % "config" % "1.3.3",
 
       "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+
+      "org.scalatest" %% "scalatest" % "3.0.5" % Test,
     )
   )
 

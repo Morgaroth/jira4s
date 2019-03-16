@@ -5,9 +5,10 @@ import cats.data.EitherT
 import cats.instances.future.catsStdInstancesForFuture
 import cats.syntax.either._
 import com.softwaremill.sttp._
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.{LazyLogging, Logger}
 import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.query.syntax.JiraRequest
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -17,8 +18,9 @@ class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit
   override implicit val m: Monad[Future] = implicitly[Monad[Future]]
 
   implicit val backend: SttpBackend[Try, Nothing] = TryHttpURLConnectionBackend()
+  private val requestsLogger = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
 
-  override def invokeRequest(requestData: JiraRequest): EitherT[Future, JiraError, String] = {
+  override def invokeRequest(requestData: JiraRequest)(implicit requestId: RequestId): EitherT[Future, JiraError, String] = {
     val u = requestData.render
     val requestWithoutPayload = sttp.method(requestData.method, uri"$u").headers(
       "Authorization" -> requestData.authToken,
@@ -31,13 +33,15 @@ class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit
     }.getOrElse(requestWithoutPayload)
 
     if (apiConfig.debug) logger.debug(s"request to send: $request")
+    requestsLogger.info(s"Request ID {}, request: {}, payload:\n{}", requestId.id, request.body("stripped"), request.body)
 
     val response = request
       .send()
-      .toEither.leftMap[JiraError](RequestingError("try-http-backend-left", _))
+      .toEither.leftMap[JiraError](RequestingError("try-http-backend-left", requestId.id, _))
       .flatMap { response =>
         if (apiConfig.debug) logger.debug(s"received request: $response")
-        response.rawErrorBody.leftMap(error => HttpError(response.code.intValue(), "http-response-error", Some(new String(error, "UTF-8"))))
+        requestsLogger.info(s"Response ID {}, response: {}, payload:\n{}", requestId.id, response.copy(rawErrorBody = Right("stripped")), response.body.fold(identity, identity))
+        response.rawErrorBody.leftMap(error => HttpError(response.code.intValue(), "http-response-error", requestId.id, Some(new String(error, "UTF-8"))))
       }
 
     EitherT.fromEither(response)

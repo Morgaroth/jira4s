@@ -4,15 +4,16 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import io.circe.generic.auto._
-import io.morgaroth.jiraclient.marshalling.JiraMarshalling
+import io.morgaroth.jiraclient.marshalling.Jira4sMarshalling
 import io.morgaroth.jiraclient.models._
 import io.morgaroth.jiraclient.query.jql.syntax.JqlQEntry._
+import io.morgaroth.jiraclient.query.jql.syntax.{JqlQEntry, Q}
 import io.morgaroth.jiraclient.query.syntax._
 import org.joda.time.DateTime
 
 import scala.language.{higherKinds, postfixOps}
 
-trait JiraRestAPI[F[_]] extends JiraMarshalling {
+trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
   val API = "rest/api/2/"
 
   implicit def m: Monad[F]
@@ -21,7 +22,7 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
 
   private lazy val regGen = JiraRequest.forServer(config)
 
-  protected def invokeRequest(request: JiraRequest): EitherT[F, JiraError, String]
+  protected def invokeRequest(request: JiraRequest)(implicit requestId: RequestId): EitherT[F, JiraError, String]
 
   type JiraRespT[A] = EitherT[F, JiraError, A]
 
@@ -31,6 +32,7 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-project-search-get
     */
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
+    implicit val rId: RequestId = RequestId.newOne
     val req = regGen(Methods.Get, API + "projects/search", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
   }
@@ -39,7 +41,8 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
     *
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-get
     */
-  def getIssue(key: String): EitherT[F, JiraError, JiraIssue] = {
+  def getIssue(key: String): JiraRespT[JiraIssue] = {
+    implicit val rId: RequestId = RequestId.newOne
     val req = regGen(Methods.Get, API + s"issue/$key", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
   }
@@ -56,16 +59,29 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
     statuses: Set[IssueStatus],
     createdAfter: Option[DateTime],
   ): EitherT[F, JiraError, Vector[JiraIssue]] = {
-    val q = Jql(List(
-      assignee.map("assignee" === _),
-      reporter.map("reporter" === _),
-      text.map("text" ~ _),
-      if (statuses.nonEmpty) Some("status" in statuses.map(_.repr)) else None
-    ).flatten.reduce(_ and _) orderBy "created".asc)
+    val q = List(
+      assignee.map(Q.Assignee === _),
+      reporter.map(Q.Reporter === _),
+      text.map(Q.Text ~ _),
+      if (statuses.nonEmpty) Some(Q.Status in statuses.map(_.repr)) else None
+    ).flatten.reduce(_ and _) orderBy Q.Created.asc
+
+    searchIssues(projectKey)(q)
+  }
+
+  /** GET /rest/api/2/issue/{issueIdOrKey}
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-search-get
+    * @see https://confluence.atlassian.com/jirasoftwarecloud/advanced-searching-764478330.html
+    */
+  def searchIssues(projectKey: String)(
+    query: JqlQEntry
+  ): EitherT[F, JiraError, Vector[JiraIssue]] = {
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
+      implicit val rId: RequestId = RequestId.newOne
       val req = regGen(Methods.Get, API + "search",
-        List(q, JPage(start, 50)),
+        List(Jql(query), JPage(start, 50)),
         None
       )
       invokeRequest(req).flatMap(MJson.readT[F, JiraPaginatedIssues])
@@ -91,6 +107,7 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-get
     */
   def getIssueRemoteLinks(key: String): EitherT[F, JiraError, Vector[JiraRemoteLink]] = {
+    implicit val rId: RequestId = RequestId.newOne
     val req = regGen(Methods.Get, API + s"issue/$key/remotelink", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraRemoteLink]])
   }
@@ -104,6 +121,7 @@ trait JiraRestAPI[F[_]] extends JiraMarshalling {
                                link: String, title: String, resolved: Boolean,
                                icon: Option[Icon] = None, relationship: Option[Relationship] = None)
   : EitherT[F, JiraError, RemoteIssueLinkIdentifies] = {
+    implicit val rId: RequestId = RequestId.newOne
     val req = regGen(Methods.Post, API + s"issue/$issueKey/remotelink", Nil, MJson.write(
       CreateJiraRemoteLink(link, None, relationship.map(_.raw),
         RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))

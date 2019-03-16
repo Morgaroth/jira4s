@@ -6,11 +6,11 @@ import cats.syntax.either._
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax.EncoderOps
-import io.morgaroth.jiraclient.{JiraError, UnmarshallingError}
+import io.morgaroth.jiraclient.{JiraError, RequestId, UnmarshallingError}
 
 import scala.language.{higherKinds, implicitConversions}
 
-trait JiraMarshalling extends JodaCodec with IssueStatusCodec {
+trait Jira4sMarshalling extends JodaCodec with IssueStatusCodec {
 
   implicit class Extractable(value: JsonObject) {
     def extract[T](implicit decoder: Decoder[T]): Either[Error, T] = decode[T](value.toString)
@@ -19,8 +19,8 @@ trait JiraMarshalling extends JodaCodec with IssueStatusCodec {
   object MJson {
     def read[T](str: String)(implicit d: Decoder[T]): Either[Error, T] = decode[T](str)
 
-    def readT[F[_], T](str: String)(implicit d: Decoder[T], m: Monad[F]): EitherT[F, JiraError, T] =
-      EitherT.fromEither(read[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, e)))
+    def readT[F[_], T](str: String)(implicit d: Decoder[T], m: Monad[F], requestId: RequestId): EitherT[F, JiraError, T] =
+      EitherT.fromEither(read[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, requestId.id, e)))
 
     def write[T](value: T)(implicit d: Encoder[T]): String = Printer.noSpaces.copy(dropNullValues = true).pretty(value.asJson)
 
@@ -31,4 +31,4 @@ trait JiraMarshalling extends JodaCodec with IssueStatusCodec {
   implicit val printer: Printer = Printer.spaces2.copy(dropNullValues = true)
 }
 
-object JiraMarshalling extends JiraMarshalling
+object Jira4sMarshalling extends Jira4sMarshalling
