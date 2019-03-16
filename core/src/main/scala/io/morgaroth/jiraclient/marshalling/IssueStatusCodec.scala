@@ -10,7 +10,7 @@ trait IssueStatusCodec {
     IssueStatus.fromRepr(raw)
   }
 
-  implicit val mergeStrategyEncoder: Encoder[IssueStatus] = Encoder.instance[IssueStatus](_.repr.asJson)
+  implicit val mergeStrategyEncoder: Encoder[IssueStatus] = Encoder.instance[IssueStatus](_.name.asJson)
 }
 
 object IssueStatusCodec extends IssueStatusCodec

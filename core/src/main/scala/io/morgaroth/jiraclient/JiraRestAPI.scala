@@ -6,10 +6,8 @@ import cats.implicits._
 import io.circe.generic.auto._
 import io.morgaroth.jiraclient.marshalling.Jira4sMarshalling
 import io.morgaroth.jiraclient.models._
-import io.morgaroth.jiraclient.query.jql.syntax.JqlQEntry._
-import io.morgaroth.jiraclient.query.jql.syntax.{JqlQEntry, Q}
+import io.morgaroth.jiraclient.query.jql.syntax._
 import io.morgaroth.jiraclient.query.syntax._
-import org.joda.time.DateTime
 
 import scala.language.{higherKinds, postfixOps}
 
@@ -52,31 +50,9 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-search-get
     * @see https://confluence.atlassian.com/jirasoftwarecloud/advanced-searching-764478330.html
     */
-  def findIssues(projectKey: String)(
-    reporter: Option[String],
-    assignee: Option[String],
-    text: Option[String],
-    statuses: Set[IssueStatus],
-    createdAfter: Option[DateTime],
-  ): EitherT[F, JiraError, Vector[JiraIssue]] = {
-    val q = List(
-      assignee.map(Q.Assignee === _),
-      reporter.map(Q.Reporter === _),
-      text.map(Q.Text ~ _),
-      if (statuses.nonEmpty) Some(Q.Status in statuses.map(_.repr)) else None
-    ).flatten.reduce(_ and _) orderBy Q.Created.asc
-
-    searchIssues(projectKey)(q)
-  }
-
-  /** GET /rest/api/2/issue/{issueIdOrKey}
-    *
-    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-search-get
-    * @see https://confluence.atlassian.com/jirasoftwarecloud/advanced-searching-764478330.html
-    */
-  def searchIssues(projectKey: String)(
-    query: JqlQEntry
-  ): EitherT[F, JiraError, Vector[JiraIssue]] = {
+  def searchIssues(
+                    query: JqlQEntry
+                  ): EitherT[F, JiraError, Vector[JiraIssue]] = {
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
       implicit val rId: RequestId = RequestId.newOne

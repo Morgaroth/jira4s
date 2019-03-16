@@ -14,4 +14,6 @@ object Q {
   val created = "created"
   val Resolution = "resolution"
   val resolution = "resolution"
+  val Project = "project"
+  val project = "project"
 }

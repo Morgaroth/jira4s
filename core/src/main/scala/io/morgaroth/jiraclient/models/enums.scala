@@ -1,27 +1,27 @@
 package io.morgaroth.jiraclient.models
 
 trait JiraEnum {
-  def repr: String
+  def name: String
 }
 
 sealed trait IssueStatus extends JiraEnum
 
 object IssueStatus {
   val all: Seq[IssueStatus] = Seq(Open, Closed)
-  val byName: Map[String, IssueStatus] = all.map(x => x.repr -> x).toMap
+  val byName: Map[String, IssueStatus] = all.map(x => x.name -> x).toMap
 
   def fromRepr(repr: String): IssueStatus = byName.getOrElse(repr, Unknown(repr))
 
 
   case object Open extends IssueStatus {
-    override val repr: String = "OPEN"
+    override val name: String = "OPEN"
   }
 
   case object Closed extends IssueStatus {
-    override val repr: String = "CLOSED"
+    override val name: String = "CLOSED"
   }
 
-  case class Unknown(repr: String) extends IssueStatus
+  case class Unknown(name: String) extends IssueStatus
 
 }
 
@@ -31,12 +31,12 @@ sealed trait Resolution extends JiraEnum
 object Resolution {
   val all: Seq[Resolution] = Seq(Complete, Invalid, ClosedToArchive, Rejected, Done, ReadyForTesting,
     DeScopeFromSprint, PassedTesting, Released, Fixed, Resolved, WontDo, CannotReproduce, Duplicate, Deferred, WontFix)
-  
-  val byName: Map[String, Resolution] = all.map(x => x.repr -> x).toMap
+
+  val byName: Map[String, Resolution] = all.map(x => x.name -> x).toMap
 
   def fromRepr(repr: String): Resolution = byName.getOrElse(repr, Unknown(repr))
 
-  abstract class ResolutionBase(val repr: String) extends Resolution
+  abstract class ResolutionBase(val name: String) extends Resolution
 
   case object Complete extends ResolutionBase("Complete")
 
@@ -73,6 +73,6 @@ object Resolution {
   // special one, it is a set of statuses, usable only for querying
   case object Unresolved extends ResolutionBase("unresolved")
 
-  case class Unknown(repr: String) extends Resolution
+  case class Unknown(name: String) extends Resolution
 
 }
