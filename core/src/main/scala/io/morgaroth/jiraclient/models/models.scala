@@ -41,7 +41,7 @@ case class JiraPaginatedIssues(startAt: Int, maxResults: Int, total: Int, isLast
   override def values: Vector[JiraIssue] = issues
 }
 
-case class JiraResolutionObj(self: String, id: String, description: String, name: String)
+case class JiraResolutionObj(self: String, id: String, description: String, name: Resolution)
 
 case class JiraStatusObj(self: String, id: String, description: String, name: String, iconUrl: String, statusCategory: JiraStatusCategory)
 

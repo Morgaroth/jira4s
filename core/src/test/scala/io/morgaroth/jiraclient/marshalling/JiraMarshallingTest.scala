@@ -14,7 +14,7 @@ class JiraMarshallingTest extends FlatSpec with Matchers with Jira4sMarshalling 
     forAll(inputs)(res => test(Source.fromResource(if (!res.endsWith(".json")) s"$res.json" else res).mkString))
   }
 
-  it should "read correctly with merge_commit" in {
+  it should "read correctly issues list" in {
     allInputsFrom("paginated_issues_1", "paginated_issues_2") { rawJson =>
       val result = MJson.read[JiraPaginatedIssues](rawJson)
       result shouldBe 'right

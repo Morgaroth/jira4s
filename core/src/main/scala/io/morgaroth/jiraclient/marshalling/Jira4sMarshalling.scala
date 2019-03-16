@@ -10,7 +10,7 @@ import io.morgaroth.jiraclient.{JiraError, RequestId, UnmarshallingError}
 
 import scala.language.{higherKinds, implicitConversions}
 
-trait Jira4sMarshalling extends JodaCodec with IssueStatusCodec {
+trait Jira4sMarshalling extends JodaCodec with IssueStatusCodec with ResolutionCodec {
 
   implicit class Extractable(value: JsonObject) {
     def extract[T](implicit decoder: Decoder[T]): Either[Error, T] = decode[T](value.toString)
