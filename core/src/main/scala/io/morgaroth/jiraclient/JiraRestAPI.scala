@@ -99,7 +99,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
   : EitherT[F, JiraError, RemoteIssueLinkIdentifies] = {
     implicit val rId: RequestId = RequestId.newOne
     val req = regGen(Methods.Post, API + s"issue/$issueKey/remotelink", Nil, MJson.write(
-      CreateJiraRemoteLink(link, None, relationship.map(_.raw),
+      CreateJiraRemoteLink(linkId, None, relationship.map(_.raw),
         RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
     ).some)
 
