@@ -30,7 +30,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-project-search-get
     */
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
-    implicit val rId: RequestId = RequestId.newOne
+    implicit val rId: RequestId = RequestId.newOne("search-projects")
     val req = regGen(Methods.Get, API + "projects/search", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
   }
@@ -40,7 +40,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-get
     */
   def getIssue(key: String): JiraRespT[JiraIssue] = {
-    implicit val rId: RequestId = RequestId.newOne
+    implicit val rId: RequestId = RequestId.newOne("get-issue-by-key")
     val req = regGen(Methods.Get, API + s"issue/$key", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
   }
@@ -55,7 +55,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
                   ): EitherT[F, JiraError, Vector[JiraIssue]] = {
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
-      implicit val rId: RequestId = RequestId.newOne
+      implicit val rId: RequestId = RequestId.newOne(s"search-issues-page-$start")
       val req = regGen(Methods.Get, API + "search",
         List(Jql(query), JPage(start, 50)),
         None
@@ -83,7 +83,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-get
     */
   def getIssueRemoteLinks(key: String): EitherT[F, JiraError, Vector[JiraRemoteLink]] = {
-    implicit val rId: RequestId = RequestId.newOne
+    implicit val rId: RequestId = RequestId.newOne("get-issue-remote-links")
     val req = regGen(Methods.Get, API + s"issue/$key/remotelink", Nil, None)
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraRemoteLink]])
   }
@@ -97,7 +97,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
                                link: String, title: String, resolved: Boolean,
                                icon: Option[Icon] = None, relationship: Option[Relationship] = None)
   : EitherT[F, JiraError, RemoteIssueLinkIdentifies] = {
-    implicit val rId: RequestId = RequestId.newOne
+    implicit val rId: RequestId = RequestId.newOne("create-or-update-issue-link")
     val req = regGen(Methods.Post, API + s"issue/$issueKey/remotelink", Nil, MJson.write(
       CreateJiraRemoteLink(linkId, None, relationship.map(_.raw),
         RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))

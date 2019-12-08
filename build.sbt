@@ -7,12 +7,13 @@ val validate = Def.taskKey[Unit]("Validates entire project")
 
 val commonSettings = Seq(
   organization := "io.morgaroth",
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.12.10",
 
   resolvers ++= Seq(
-    "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
+    ("Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/").withAllowInsecureProtocol(true),
     Resolver.bintrayRepo("morgaroth", "maven"),
   ),
+
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
 
   logBuffered := false,
@@ -37,7 +38,7 @@ val core = project
 
       "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
 
-      "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
     )
   )
 
@@ -46,7 +47,7 @@ val sttp = project.in(file("sttp")).dependsOn(core)
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp" %% "core" % "1.5.11",
+      "com.softwaremill.sttp.client" %% "core" % "2.0.0-RC5",
     )
   )
 

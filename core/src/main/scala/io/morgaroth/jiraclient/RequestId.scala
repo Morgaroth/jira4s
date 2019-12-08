@@ -2,8 +2,10 @@ package io.morgaroth.jiraclient
 
 import java.util.UUID
 
-case class RequestId(id: String)
+case class RequestId(id: String, kind: String) {
+  override lazy val toString = s"$id($kind)"
+}
 
 object RequestId {
-  def newOne = new RequestId(UUID.randomUUID().toString)
+  def newOne(kind: String) = new RequestId(UUID.randomUUID().toString, kind)
 }

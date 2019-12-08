@@ -1,4 +1,4 @@
-image: hseeberger/scala-sbt
+image: hseeberger/scala-sbt:8u222_1.3.3_2.13.1
 
 cache:
   paths:
@@ -8,7 +8,7 @@ cache:
 variables:
   GIT_STRATEGY: clone
   GIT_SUBMODULE_STRATEGY: none
-#  GET_SOURCES_ATTEMPTS: 3
+  SBT_OPTS: '-Xmx2g -Xss10m -Xms1g'
 
 stages:
   - validate
@@ -22,7 +22,7 @@ before_script:
 tests:
   stage: validate
   script:
-    - sbt -ivy $PWD/.ivy2 -sbt-dir $PWD/.sbt validate
+    - sbt -ivy $PWD/.ivy2 -sbt-dir $PWD/.sbt +validate
 
 release:
   stage: publish
