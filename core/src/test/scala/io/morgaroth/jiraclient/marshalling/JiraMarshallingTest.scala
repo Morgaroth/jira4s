@@ -17,7 +17,7 @@ class JiraMarshallingTest extends FlatSpec with Matchers with Jira4sMarshalling 
   it should "read correctly issues list" in {
     allInputsFrom("paginated_issues_1", "paginated_issues_2") { rawJson =>
       val result = MJson.read[JiraPaginatedIssues](rawJson)
-      result shouldBe 'right
+      result shouldBe Symbol("right")
     }
   }
 }

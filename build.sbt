@@ -1,17 +1,20 @@
 val akkaV = "2.5.6"
 val akkaHttpVer = "10.0.9"
 
-val circeVersion = "0.11.1"
+val circeVersion = "0.12.3"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
+val crossScalaVersionsValues = Seq("2.12.10", "2.13.1")
+
 val commonSettings = Seq(
   organization := "io.morgaroth",
-  scalaVersion := "2.12.10",
+  scalaVersion := "2.13.1",
+  crossScalaVersions := crossScalaVersionsValues,
 
   resolvers ++= Seq(
     ("Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/").withAllowInsecureProtocol(true),
-    Resolver.bintrayRepo("morgaroth", "maven"),
+    Resolver.bintrayRepo("morgaroth", "maven").withAllowInsecureProtocol(true),
   ),
 
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
@@ -23,20 +26,19 @@ val commonSettings = Seq(
   bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
 )
 
-
 val core = project
   .settings(commonSettings: _*)
   .settings(
     name := "jira4s-core",
     libraryDependencies ++= Seq(
       "joda-time" % "joda-time" % "2.10.1",
-      "org.typelevel" %% "cats-core" % "1.0.0",
+      "org.typelevel" %% "cats-core" % "2.0.0",
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
       "com.typesafe" % "config" % "1.3.3",
 
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
 
       "org.scalatest" %% "scalatest" % "3.0.8" % Test,
     )
@@ -56,22 +58,22 @@ val akka = project.in(file("akka-http")).dependsOn(core)
   .settings(
     name := "jira4s-akka-http",
     libraryDependencies ++= Seq(
-
     )
   )
 
 val jira4s = project.in(file(".")).aggregate(core, sttp, akka)
   .settings(
     name := "jira4s",
-
     publish := {},
+    crossScalaVersions := crossScalaVersionsValues,
 
     validate := Def.task {
       (Test / test).value
       //      tut.value
     }.value,
 
-    // Release
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
+    releaseNextCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
+    releaseCrossBuild := true,
   )

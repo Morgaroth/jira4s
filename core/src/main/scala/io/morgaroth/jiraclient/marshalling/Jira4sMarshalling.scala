@@ -22,9 +22,9 @@ trait Jira4sMarshalling extends JodaCodec with IssueStatusCodec with ResolutionC
     def readT[F[_], T](str: String)(implicit d: Decoder[T], m: Monad[F], requestId: RequestId): EitherT[F, JiraError, T] =
       EitherT.fromEither(read[T](str).leftMap[JiraError](e => UnmarshallingError(e.getMessage, requestId.id, e)))
 
-    def write[T](value: T)(implicit d: Encoder[T]): String = Printer.noSpaces.copy(dropNullValues = true).pretty(value.asJson)
+    def write[T](value: T)(implicit d: Encoder[T]): String = Printer.noSpaces.copy(dropNullValues = true).print(value.asJson)
 
-    def writePretty[T](value: T)(implicit d: Encoder[T]): String = printer.pretty(value.asJson)
+    def writePretty[T](value: T)(implicit d: Encoder[T]): String = printer.print(value.asJson)
   }
 
   // keep all special settings with method write above
