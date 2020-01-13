@@ -29,6 +29,12 @@ trait Jira4sMarshalling extends JodaCodec with IssueStatusCodec with ResolutionC
 
   // keep all special settings with method write above
   implicit val printer: Printer = Printer.spaces2.copy(dropNullValues = true)
+
+  implicit class unmarshallEitherT[F[_]](data: EitherT[F, JiraError, String])(implicit m: Monad[F]) {
+    def unmarshall[TargetType: Decoder](implicit rId: RequestId): EitherT[F, JiraError, TargetType] =
+      data.flatMap(MJson.readT[F, TargetType])
+  }
+
 }
 
 object Jira4sMarshalling extends Jira4sMarshalling

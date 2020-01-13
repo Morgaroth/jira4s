@@ -18,7 +18,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
 
   def config: JiraConfig
 
-  private lazy val regGen = JiraRequest.forServer(config)
+  private val reqGen = RequestGenerator(config)
 
   protected def invokeRequest(request: JiraRequest)(implicit requestId: RequestId): EitherT[F, JiraError, String]
 
@@ -31,7 +31,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     */
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
     implicit val rId: RequestId = RequestId.newOne("search-projects")
-    val req = regGen(Methods.Get, API + "projects/search", Nil, None)
+    val req = reqGen.get(API + "projects/search")
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
   }
 
@@ -41,7 +41,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     */
   def getIssue(key: String): JiraRespT[JiraIssue] = {
     implicit val rId: RequestId = RequestId.newOne("get-issue-by-key")
-    val req = regGen(Methods.Get, API + s"issue/$key", Nil, None)
+    val req = reqGen.get(API + s"issue/$key")
     invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
   }
 
@@ -56,10 +56,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
       implicit val rId: RequestId = RequestId.newOne(s"search-issues-page-$start")
-      val req = regGen(Methods.Get, API + "search",
-        List(Jql(query), JPage(start, 50)),
-        None
-      )
+      val req = reqGen.get(API + "search", Jql(query), JPage(start, 50))
       invokeRequest(req).flatMap(MJson.readT[F, JiraPaginatedIssues])
     }
 
@@ -82,9 +79,9 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     *
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-get
     */
-  def getIssueRemoteLinks(key: String): EitherT[F, JiraError, Vector[JiraRemoteLink]] = {
+  def getIssueRemoteLinks(key: String): JiraRespT[Vector[JiraRemoteLink]] = {
     implicit val rId: RequestId = RequestId.newOne("get-issue-remote-links")
-    val req = regGen(Methods.Get, API + s"issue/$key/remotelink", Nil, None)
+    val req = reqGen.get(API + s"issue/$key/remotelink")
     invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraRemoteLink]])
   }
 
@@ -96,14 +93,33 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
                                issueKey: String, linkId: String,
                                link: String, title: String, resolved: Boolean,
                                icon: Option[Icon] = None, relationship: Option[Relationship] = None)
-  : EitherT[F, JiraError, RemoteIssueLinkIdentifies] = {
+  : JiraRespT[RemoteIssueLinkIdentifies] = {
     implicit val rId: RequestId = RequestId.newOne("create-or-update-issue-link")
-    val req = regGen(Methods.Post, API + s"issue/$issueKey/remotelink", Nil, MJson.write(
-      CreateJiraRemoteLink(linkId, None, relationship.map(_.raw),
-        RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
-    ).some)
+    val payload = CreateJiraRemoteLink(linkId, None, relationship.map(_.raw),
+      RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
+    val req = reqGen.post(API + s"issue/$issueKey/remotelink", MJson.write(payload))
 
     invokeRequest(req).flatMap(MJson.readT[F, RemoteIssueLinkIdentifies])
+  }
+
+  /** DELETE /rest/api/2/issue/{issueIdOrKey}/remotelink/{linkid}
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-remotelink-linkId-delete
+    */
+  def deleteRemoteLinkById(issueKey: String, linkId: String): JiraRespT[Unit] = {
+    implicit val rId: RequestId = RequestId.newOne("delete-remote-link-by-linkid")
+    val req = reqGen.delete(API + s"issue/$issueKey/remotelink/$linkId")
+    invokeRequest(req).map(_ => ())
+  }
+
+  /** DELETE /rest/api/2/issue/{issueIdOrKey}/remotelink
+    *
+    * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-remotelink-delete
+    */
+  def deleteRemoteLinkByGlobalId(issueKey: String, globalId: String): JiraRespT[Unit] = {
+    implicit val rId: RequestId = RequestId.newOne("delete-remote-link-by-globalid")
+    val req = reqGen.delete(API + s"issue/$issueKey/remotelink",KVParam("globalId",globalId))
+    invokeRequest(req).map(_ => ())
   }
 }
 

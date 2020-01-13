@@ -1,5 +1,7 @@
 package io.morgaroth.jiraclient.query.syntax
 
+import java.net.URLEncoder
+
 import io.morgaroth.jiraclient.JiraConfig
 import io.morgaroth.jiraclient.query.jql.syntax.JqlQEntry
 
@@ -26,8 +28,10 @@ object JFields {
 }
 
 class JParam(name: String, value: String) extends JiraQuery {
-  lazy val render: String = s"$name=$value"
+  lazy val render: String = s"$name=${URLEncoder.encode(value, "utf-8")}"
 }
+
+case class KVParam(name: String, value: String) extends JParam(name, value)
 
 case class Jql(query: JqlQEntry) extends JParam("jql", query.render)
 
@@ -60,7 +64,7 @@ case class JiraRequest(
                         authToken: String,
                         method: Method,
                         path: String,
-                        query: List[JiraQuery],
+                        query: Vector[JiraQuery],
                         payload: Option[String],
                       ) {
   lazy val render: String = {
@@ -71,6 +75,19 @@ case class JiraRequest(
   }
 }
 
-object JiraRequest {
-  def forServer(cfg: JiraConfig): (Method, String, List[JiraQuery], Option[String]) => JiraRequest = new JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, _, _, _, _)
+case class RequestGenerator(cfg: JiraConfig) {
+  def get(path: String): JiraRequest =
+    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Get, path, Vector.empty, None)
+
+  def get(path: String, query: JiraQuery*): JiraRequest =
+    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Get, path, query.toVector, None)
+
+  def post(path: String, data: String): JiraRequest =
+    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Post, path, Vector.empty, Some(data))
+
+  def put(path: String, data: String): JiraRequest =
+    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Put, path, Vector.empty, Some(data))
+
+  def delete(path: String, query: JiraQuery*): JiraRequest =
+    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Delete, path, query.toVector, None)
 }
