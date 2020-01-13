@@ -90,12 +90,12 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-api-2-issue-issueIdOrKey-remotelink-post
     */
   def createOrUpdateIssueLink(
-                               issueKey: String, linkId: String,
+                               issueKey: String, globalId: String,
                                link: String, title: String, resolved: Boolean,
                                icon: Option[Icon] = None, relationship: Option[Relationship] = None)
   : JiraRespT[RemoteIssueLinkIdentifies] = {
     implicit val rId: RequestId = RequestId.newOne("create-or-update-issue-link")
-    val payload = CreateJiraRemoteLink(linkId, None, relationship.map(_.raw),
+    val payload = CreateJiraRemoteLink(globalId, None, relationship.map(_.raw),
       RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
     val req = reqGen.post(API + s"issue/$issueKey/remotelink", MJson.write(payload))
 
