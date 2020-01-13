@@ -32,7 +32,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
   def searchProjects: EitherT[F, JiraError, Vector[JiraProject]] = {
     implicit val rId: RequestId = RequestId.newOne("search-projects")
     val req = reqGen.get(API + "projects/search")
-    invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraProject]])
+    invokeRequest(req).unmarshall[Vector[JiraProject]]
   }
 
   /** GET /rest/api/2/issue/{issueIdOrKey}
@@ -42,7 +42,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
   def getIssue(key: String): JiraRespT[JiraIssue] = {
     implicit val rId: RequestId = RequestId.newOne("get-issue-by-key")
     val req = reqGen.get(API + s"issue/$key")
-    invokeRequest(req).flatMap(MJson.readT[F, JiraIssue])
+    invokeRequest(req).unmarshall[JiraIssue]
   }
 
   /** GET /rest/api/2/issue/{issueIdOrKey}
@@ -57,7 +57,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
       implicit val rId: RequestId = RequestId.newOne(s"search-issues-page-$start")
       val req = reqGen.get(API + "search", Jql(query), JPage(start, 50))
-      invokeRequest(req).flatMap(MJson.readT[F, JiraPaginatedIssues])
+      invokeRequest(req).unmarshall[JiraPaginatedIssues]
     }
 
     def getAll(startFrom: Int, acc: Vector[JiraIssue]): JiraRespT[Vector[JiraIssue]] = {
@@ -82,7 +82,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
   def getIssueRemoteLinks(key: String): JiraRespT[Vector[JiraRemoteLink]] = {
     implicit val rId: RequestId = RequestId.newOne("get-issue-remote-links")
     val req = reqGen.get(API + s"issue/$key/remotelink")
-    invokeRequest(req).flatMap(MJson.readT[F, Vector[JiraRemoteLink]])
+    invokeRequest(req).unmarshall[Vector[JiraRemoteLink]]
   }
 
   /** POST /rest/api/2/issue/{issueIdOrKey}/remotelink
@@ -99,7 +99,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
       RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some))
     val req = reqGen.post(API + s"issue/$issueKey/remotelink", MJson.write(payload))
 
-    invokeRequest(req).flatMap(MJson.readT[F, RemoteIssueLinkIdentifies])
+    invokeRequest(req).unmarshall[RemoteIssueLinkIdentifies]
   }
 
   /** DELETE /rest/api/2/issue/{issueIdOrKey}/remotelink/{linkid}
