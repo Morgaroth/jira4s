@@ -1,11 +1,13 @@
 package io.morgaroth.jiraclient.query.jql.syntax
 
+import java.net.URLEncoder
+
 import scala.language.implicitConversions
 
 
 sealed trait JqlQEntry {
-  val space = "%20"
-  val equal = "%3D"
+  val space = """\\u002b"""
+  val equal = "="
 
   def render: String
 
@@ -19,7 +21,7 @@ case object JqlNothing extends JqlQEntry {
 }
 
 case class JqlEq(key: String, value: String) extends JqlQEntry {
-  override lazy val render: String = s"""$key$space$equal$space"$value""""
+  override lazy val render: String = s"""$key$equal"$value""""
 }
 
 abstract class JqlOrd(key: String, value: String, op: String) extends JqlQEntry {

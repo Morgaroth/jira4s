@@ -5,7 +5,7 @@ val circeVersion = "0.12.3"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
-val crossScalaVersionsValues = Seq("2.12.10", "2.13.1")
+val crossScalaVersionsValues = Seq("2.12.12", "2.13.2")
 
 val commonSettings = Seq(
   organization := "io.morgaroth",

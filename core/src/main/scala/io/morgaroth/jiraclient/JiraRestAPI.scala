@@ -11,14 +11,16 @@ import io.morgaroth.jiraclient.query.syntax._
 
 import scala.language.{higherKinds, postfixOps}
 
-trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
+trait JiraRestAPI[F[_]] extends Jira4sMarshalling
+  with UpdateIssueAPI[F] {
+
   val API = "rest/api/2/"
 
   implicit def m: Monad[F]
 
   def config: JiraConfig
 
-  private val reqGen = RequestGenerator(config)
+  protected val reqGen = RequestGenerator(config)
 
   protected def invokeRequest(request: JiraRequest)(implicit requestId: RequestId): EitherT[F, JiraError, String]
 
@@ -55,7 +57,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
                   ): EitherT[F, JiraError, Vector[JiraIssue]] = {
 
     def getPage(start: Int = 0): EitherT[F, JiraError, JiraPaginatedIssues] = {
-      implicit val rId: RequestId = RequestId.newOne(s"search-issues-page-$start")
+      implicit val rId: RequestId = RequestId.newOne(s"search-issues-start-at-$start")
       val req = reqGen.get(API + "search", Jql(query), JPage(start, 50))
       invokeRequest(req).unmarshall[JiraPaginatedIssues]
     }
@@ -64,10 +66,10 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling {
       getPage(startFrom).flatMap { resp =>
         val currentIssues = acc ++ resp.issues
         val currentCnt = currentIssues.size
-        if (currentCnt > resp.total || resp.issues.isEmpty) {
+        if (currentCnt >= resp.total || resp.issues.isEmpty) {
           currentIssues.pure[JiraRespT]
         } else {
-          getAll(startFrom + resp.issues.length, currentIssues)
+          getAll(startFrom + 1, currentIssues)
         }
       }
     }
