@@ -1,7 +1,7 @@
 val akkaV = "2.5.6"
 val akkaHttpVer = "10.0.9"
 
-val circeVersion = "0.12.3"
+val circeVersion = "0.12.2"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
@@ -35,6 +35,7 @@ val core = project
       "org.typelevel" %% "cats-core" % "2.0.0",
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-generic-extras" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
       "com.typesafe" % "config" % "1.3.3",
 
@@ -49,7 +50,9 @@ val sttp = project.in(file("sttp")).dependsOn(core)
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client" %% "core" % "2.0.0-RC5",
+      "com.softwaremill.sttp.client" %% "core" % "2.0.0-RC6",
+      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
+      "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
     )
   )
 

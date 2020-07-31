@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 
 
 sealed trait JqlQEntry {
-  val space = """\\u002b"""
+  val space = """ """
   val equal = "="
 
   def render: String

@@ -4,7 +4,7 @@ import cats.data.EitherT
 import io.circe.Encoder
 import io.circe.generic.auto._
 import io.morgaroth.jiraclient.marshalling.Jira4sMarshalling
-import io.morgaroth.jiraclient.models._
+import io.morgaroth.jiraclient.models.IssueKey
 
 import scala.language.postfixOps
 
@@ -12,10 +12,10 @@ trait UpdateIssueAPI[F[_]] extends Jira4sMarshalling {
   self: JiraRestAPI[F] =>
 
   // @see: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-put
-  def updateJiraIssue(issueKey: String, updatePayload: UpdateJiraIssue): EitherT[F, JiraError, Unit] = {
+  def updateJiraIssue(issueKey: IssueKey, updatePayload: UpdateJiraIssue): EitherT[F, JiraError, Unit] = {
     implicit val rId: RequestId = RequestId.newOne("modify-issue")
     val payload = ModifyJiraIssuePayload(updatePayload)
-    val req = reqGen.put(API + s"issue/$issueKey", MJson.write(payload))
+    val req = reqGen.put(s"$API/issue/$issueKey", MJson.write(payload))
 
     invokeRequest(req).map(_ => ())
   }
