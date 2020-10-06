@@ -1,5 +1,8 @@
 package io.morgaroth.jiraclient.models
 
+import io.circe.Decoder
+import io.circe.generic.extras.semiauto.deriveConfiguredDecoder
+import io.morgaroth.jiraclient.marshalling.config
 import org.joda.time.DateTime
 
 trait JiraPaginatedResponse[T] {
@@ -22,6 +25,10 @@ case class JiraIssue(id: String, self: String, key: IssueKey, fields: JiraIssueF
 
 case class JiraIssueShort(id: String, self: String, key: IssueKey) {
   lazy val htmlSelf: String = self.replace("rest/api/2/issue", "browse").replace(id, key.value)
+}
+
+object JiraIssueShort {
+  implicit val JiraIssueShortCirceDecoder: Decoder[JiraIssueShort] = deriveConfiguredDecoder[JiraIssueShort]
 }
 
 case class JiraIssueWithWorklog(id: String, self: String, key: IssueKey, fields: JiraIssueFieldsWork)

@@ -1,7 +1,6 @@
 package io.morgaroth.jiraclient
 
 import cats.data.EitherT
-import io.circe.generic.auto._
 import io.morgaroth.jiraclient.createmodels.{CreateJiraIssue, CreateJiraIssuePayload, IssuesPayload}
 import io.morgaroth.jiraclient.marshalling.Jira4sMarshalling
 import io.morgaroth.jiraclient.models.{IssueKey, JiraIssueShort}

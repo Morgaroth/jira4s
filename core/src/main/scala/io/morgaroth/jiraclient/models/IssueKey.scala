@@ -7,6 +7,6 @@ case class IssueKey(value: String) extends AnyVal {
 }
 
 object IssueKey {
-  implicit val encoder = Encoder.encodeString.contramap[IssueKey](_.value)
-  implicit val decoder = Decoder.decodeString.map(IssueKey(_))
+  implicit val encoder: Encoder[IssueKey] = Encoder.encodeString.contramap[IssueKey](_.value)
+  implicit val decoder: Decoder[IssueKey] = Decoder.decodeString.map(IssueKey(_))
 }

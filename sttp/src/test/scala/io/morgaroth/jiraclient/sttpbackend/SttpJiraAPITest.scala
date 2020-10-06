@@ -2,6 +2,7 @@ package io.morgaroth.jiraclient.sttpbackend
 
 import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.createmodels.{CreateJiraIssue, JiraIssueId, JiraProjectId, PriorityId}
+import io.morgaroth.jiraclient.models.IssueKey
 import org.scalatest.DoNotDiscover
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
@@ -28,7 +29,7 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
   behavior of "SttpJiraAPI"
 
   it should "create ticket" in {
-    val projectKey = JiraProjectId.key("")
+    val projectKey = JiraProjectId.key("MDT2")
     val payload = CreateJiraIssue(
       projectKey,
       "Some summary",
@@ -40,6 +41,11 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
     val response = client.createIssue(payload).value.futureValue.rightValue
     //    val moved = client.moveIssuesToEpic(IssueKey(""), Vector(IssueKey(response.id)))
     println(response)
+  }
+
+  it should "get ticket" in {
+    val ticket = client.getIssue(IssueKey("MDT2-706")).value.futureValue.rightValue
+    println(ticket)
   }
 
 }
