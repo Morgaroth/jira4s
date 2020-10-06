@@ -1,7 +1,7 @@
 package io.morgaroth.jiraclient.createmodels
 
 import io.circe.generic.extras.semiauto.deriveConfiguredEncoder
-import io.circe.Encoder
+import io.circe.{Encoder, Json}
 import io.morgaroth.jiraclient.marshalling.config
 import io.morgaroth.jiraclient.models.IssueKey
 
@@ -13,10 +13,22 @@ case class CreateJiraIssue(
                             issuetype: JiraIssueId,
                             labels: Option[Set[String]],
                             priority: Option[PriorityId],
+                            customFields: Map[String, String],
                           )
 
 object CreateJiraIssue {
-  implicit val CreateJiraIssueCirceEncoder: Encoder[CreateJiraIssue] = deriveConfiguredEncoder[CreateJiraIssue]
+
+  private val simpleEncoder = Encoder.forProduct6("project", "summary", "description", "issuetype", "labels", "priority")(
+    (e: CreateJiraIssue) => (e.project, e.summary, e.description, e.issuetype, e.labels, e.priority)
+  )
+
+  implicit val CreateJiraIssueCirceEncoder: Encoder[CreateJiraIssue] = {
+    (a: CreateJiraIssue) =>
+      val obj = a.customFields.foldLeft(simpleEncoder.encodeObject(a)) {
+        case (acc, (k, v)) => acc.add(k, Json.fromString(v))
+      }
+      Json.fromJsonObject(obj)
+  }
 }
 
 case class CreateJiraIssuePayload(fields: CreateJiraIssue)
@@ -66,6 +78,4 @@ case class IssuesPayload(issues: Vector[IssueKey])
 
 object IssuesPayload {
   implicit val IssuesPayloadCirceEncoder: Encoder[IssuesPayload] = deriveConfiguredEncoder[IssuesPayload]
-
 }
-

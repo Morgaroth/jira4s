@@ -32,11 +32,12 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
     val projectKey = JiraProjectId.key("MDT2")
     val payload = CreateJiraIssue(
       projectKey,
-      "Some summary",
+      "Some summary 2",
       "description?",
       JiraIssueId.bug,
       Some(Set("label-1", "label-2")),
       Some(PriorityId.Critical),
+      Map("customfield_12120" -> "MDT2-1")
     )
     val response = client.createIssue(payload).value.futureValue.rightValue
     //    val moved = client.moveIssuesToEpic(IssueKey(""), Vector(IssueKey(response.id)))
