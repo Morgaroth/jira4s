@@ -1,8 +1,8 @@
 package io.morgaroth.jiraclient
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
-class JiraRestAPITest extends FlatSpec {
+class JiraRestAPITest extends AnyFlatSpec {
 
   behavior of "JiraRestAPI"
 

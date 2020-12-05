@@ -2,11 +2,13 @@ package io.morgaroth.jiraclient.marshalling
 
 import io.circe.generic.auto._
 import io.morgaroth.jiraclient.models.JiraPaginatedIssues
-import org.scalatest.{FlatSpec, Inspectors, Matchers}
+import org.scalatest.Inspectors
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.io.Source
 
-class JiraMarshallingTest extends FlatSpec with Matchers with Jira4sMarshalling with Inspectors {
+class JiraMarshallingTest extends AnyFlatSpec with Matchers with Jira4sMarshalling with Inspectors {
 
   behavior of "Jira4sMarshalling"
 

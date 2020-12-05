@@ -1,15 +1,14 @@
-val akkaV = "2.5.6"
-val akkaHttpVer = "10.0.9"
-
-val circeVersion = "0.12.2"
+val circeVersion = "0.12.3"
+val circeExtVersion = "0.12.2"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
-val crossScalaVersionsValues = Seq("2.12.12", "2.13.2")
+val projectScalaVersion = "2.13.3"
+val crossScalaVersionsValues = Seq("2.12.12", projectScalaVersion)
 
 val commonSettings = Seq(
   organization := "io.morgaroth",
-  scalaVersion := "2.13.1",
+  scalaVersion := projectScalaVersion,
   crossScalaVersions := crossScalaVersionsValues,
 
   resolvers ++= Seq(
@@ -32,16 +31,14 @@ val core = project
     name := "jira4s-core",
     libraryDependencies ++= Seq(
       "joda-time" % "joda-time" % "2.10.1",
-      "org.typelevel" %% "cats-core" % "2.0.0",
+      "org.typelevel" %% "cats-core" % "2.2.0",
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-generic-extras" % circeVersion,
+      "io.circe" %% "circe-generic-extras" % circeExtVersion,
       "io.circe" %% "circe-parser" % circeVersion,
-      "com.typesafe" % "config" % "1.3.3",
-
+      "com.typesafe" % "config" % "1.4.1",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-
-      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.2" % Test,
     )
   )
 
@@ -51,7 +48,7 @@ val sttp = project.in(file("sttp")).dependsOn(core)
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client" %% "core" % "2.0.0-RC6",
-      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.2" % Test,
       "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
     )
   )
