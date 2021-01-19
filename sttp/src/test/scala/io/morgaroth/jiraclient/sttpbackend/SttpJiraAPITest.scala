@@ -16,9 +16,9 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
 
   implicit override def patienceConfig: PatienceConfig = PatienceConfig(Span(1, Minutes))
 
-  private val jiraAddress = Option(System.getenv("jira-address"))
-  private val jiraLogin   = Option(System.getenv("jira-login"))
-  private val jiraToken   = Option(System.getenv("jira-access-token"))
+  private val jiraAddress = Option(System.getenv("JIRA_ADDRESS"))
+  private val jiraLogin   = Option(System.getenv("JIRA_USERNAME"))
+  private val jiraToken   = Option(System.getenv("JIRA_PASSWORD"))
   assume(jiraAddress.isDefined, "jira-address env must be set for this test")
   assume(jiraLogin.isDefined, "jira-login env must be set for this test")
   assume(jiraToken.isDefined, "jira-access-token env must be set for this test")
@@ -45,7 +45,7 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
   }
 
   it should "get ticket" in {
-    val ticket = client.getIssue(IssueKey("MDT2-706")).value.futureValue.rightValue
+    val ticket = client.getIssue(IssueKey("MDT2-1444")).value.futureValue.rightValue
     println(ticket)
   }
 

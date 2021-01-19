@@ -17,8 +17,7 @@ stages:
 
 Run Tests:
   stage: validate
-  script:
-    - sbt +validate
+  script: sbt +test:compile
 
 Check formatting:
   stage: validate

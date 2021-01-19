@@ -1,6 +1,6 @@
 package io.morgaroth.jiraclient.createmodels
 
-import io.circe.generic.extras.semiauto.deriveConfiguredEncoder
+import io.circe.generic.semiauto.deriveEncoder
 import io.circe.{Encoder, Json}
 import io.morgaroth.jiraclient.models.IssueKey
 
@@ -30,13 +30,13 @@ object CreateJiraIssue {
 case class CreateJiraIssuePayload(fields: CreateJiraIssue)
 
 object CreateJiraIssuePayload {
-  implicit val CreateJiraIssuePayloadCirceEncoder: Encoder[CreateJiraIssuePayload] = deriveConfiguredEncoder[CreateJiraIssuePayload]
+  implicit val CreateJiraIssuePayloadCirceEncoder: Encoder[CreateJiraIssuePayload] = deriveEncoder[CreateJiraIssuePayload]
 }
 
 case class JiraProjectId(key: Option[String], id: Option[String])
 
 object JiraProjectId {
-  implicit val JiraProjectIdCirceEncoder: Encoder[JiraProjectId] = deriveConfiguredEncoder[JiraProjectId]
+  implicit val JiraProjectIdCirceEncoder: Encoder[JiraProjectId] = deriveEncoder[JiraProjectId]
 
   def key(value: String) = new JiraProjectId(Some(value), None)
 
@@ -47,7 +47,7 @@ object JiraProjectId {
 case class JiraIssueId(id: Option[String], name: Option[String])
 
 object JiraIssueId {
-  implicit val JiraIssueIdCirceEncoder: Encoder[JiraIssueId] = deriveConfiguredEncoder[JiraIssueId]
+  implicit val JiraIssueIdCirceEncoder: Encoder[JiraIssueId] = deriveEncoder[JiraIssueId]
 
   def id(id: String) = new JiraIssueId(Some(id), None)
 
@@ -60,7 +60,7 @@ object JiraIssueId {
 case class PriorityId(name: Option[String])
 
 object PriorityId {
-  implicit val PriorityIdCirceEncoder: Encoder[PriorityId] = deriveConfiguredEncoder[PriorityId]
+  implicit val PriorityIdCirceEncoder: Encoder[PriorityId] = deriveEncoder[PriorityId]
 
   def name(value: String) = new PriorityId(Some(value))
 
@@ -73,5 +73,5 @@ object PriorityId {
 case class IssuesPayload(issues: Vector[IssueKey])
 
 object IssuesPayload {
-  implicit val IssuesPayloadCirceEncoder: Encoder[IssuesPayload] = deriveConfiguredEncoder[IssuesPayload]
+  implicit val IssuesPayloadCirceEncoder: Encoder[IssuesPayload] = deriveEncoder[IssuesPayload]
 }

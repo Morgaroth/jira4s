@@ -1,8 +1,6 @@
 val circeVersion = "0.13.0"
 val circeExtVersion = "0.13.0"
 
-val validate = Def.taskKey[Unit]("Validates entire project")
-
 val projectScalaVersion = "2.13.4"
 val crossScalaVersionsValues = Seq(projectScalaVersion, "2.12.12")
 
@@ -22,7 +20,7 @@ val commonSettings = Seq(
 
   // Bintray
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  bintrayVcsUrl := Some("https://gitlab.com/morgaroth/op-rabbit-rpc.git"),
+  bintrayVcsUrl := Some("https://gitlab.com/morgaroth/jira4s.git"),
 )
 
 val core = project
@@ -30,7 +28,6 @@ val core = project
   .settings(
     name := "jira4s-core",
     libraryDependencies ++= Seq(
-      "joda-time" % "joda-time" % "2.10.1",
       "org.typelevel" %% "cats-core" % "2.2.0",
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
@@ -58,11 +55,6 @@ val jira4s = project.in(file(".")).aggregate(core, sttp)
     name := "jira4s",
     publish := {},
     crossScalaVersions := crossScalaVersionsValues,
-
-    validate := Def.task {
-      (Test / test).value
-      //      tut.value
-    }.value,
 
     releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
     releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",

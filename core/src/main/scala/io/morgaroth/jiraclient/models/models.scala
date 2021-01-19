@@ -1,7 +1,9 @@
 package io.morgaroth.jiraclient.models
 
 import io.circe.Decoder
-import io.circe.generic.extras.semiauto.deriveConfiguredDecoder
+import io.circe.generic.semiauto.deriveDecoder
+
+import java.time.ZonedDateTime
 
 trait JiraPaginatedResponse[T] {
   def startAt: Int
@@ -26,7 +28,7 @@ case class JiraIssueShort(id: String, self: String, key: IssueKey) {
 }
 
 object JiraIssueShort {
-  implicit val JiraIssueShortCirceDecoder: Decoder[JiraIssueShort] = deriveConfiguredDecoder[JiraIssueShort]
+  implicit val JiraIssueShortCirceDecoder: Decoder[JiraIssueShort] = deriveDecoder[JiraIssueShort]
 }
 
 case class JiraIssueWithWorklog(id: String, self: String, key: IssueKey, fields: JiraIssueFieldsWork)
@@ -42,6 +44,7 @@ case class JiraIssueFields(
     assignee: Option[JiraUser],
     reporter: JiraUser,
     issuetype: JiraIssueType,
+    created: ZonedDateTime,
 )
 
 case class JiraIssueFieldsWork(project: JiraProject, worklog: JiraWorklogs)
@@ -59,7 +62,7 @@ case class JiraStatusCategory(self: String, id: Long, key: String, colorName: St
 
 case class JiraIssueType(self: String, id: String, description: String, iconUrl: String, name: String, subtask: Boolean)
 
-case class JiraWorklog(author: JiraUser, started: DateTime, timeSpentSeconds: Long, id: String)
+case class JiraWorklog(author: JiraUser, started: ZonedDateTime, timeSpentSeconds: Long, id: String)
 
 case class JiraWorklogs(startAt: Int, maxResults: Int, total: Int, worklogs: Vector[JiraWorklog])
     extends JiraPaginatedResponse[JiraWorklog] {
@@ -133,7 +136,7 @@ case class JTempoWorklog(
     self: String,
     issue: JTempoIssue,
     timeSpentSeconds: Long,
-    dateStarted: DateTime,
+    dateStarted: ZonedDateTime,
     project: Option[JiraProject],
     author: JTempoUser,
     jiraWorklogId: Option[Long],
