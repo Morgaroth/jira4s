@@ -20,7 +20,7 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with HelperClasses {
   assume(jiraToken.isDefined, "jira-access-token env must be set for this test")
 
   private val cfg = JiraConfig(jiraAddress.get, jiraLogin.get, jiraToken.get)
-  val client      = new SttpJiraAPI(cfg, JiraRestAPIConfig(true))
+  val client      = new SttpJiraAPISync(cfg, JiraRestAPIConfig(true))
 
   behavior of "SttpJiraAPI"
 

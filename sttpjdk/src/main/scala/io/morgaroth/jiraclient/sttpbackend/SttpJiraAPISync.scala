@@ -14,7 +14,7 @@ import sttp.client3.httpclient.HttpClientSyncBackend
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext)
+class SttpJiraAPISync(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext)
     extends JiraRestAPI[cats.Id]
     with LazyLogging {
 

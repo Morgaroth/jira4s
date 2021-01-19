@@ -36,12 +36,12 @@ val core = project
     ),
   )
 
-val sttpsync = project
-  .in(file("sttpsync"))
+val sttpjdk = project
+  .in(file("sttpjdk"))
   .dependsOn(core)
   .settings(commonSettings: _*)
   .settings(
-    name := "jira4s-sttp-sync",
+    name := "jira4s-sttp",
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client3" %% "core"                     % "3.0.0",
       "com.softwaremill.sttp.client3" %% "httpclient-backend"       % "3.0.0",
@@ -53,7 +53,7 @@ val sttpsync = project
 
 val jira4s = project
   .in(file("."))
-  .aggregate(core, sttpsync)
+  .aggregate(core, sttpjdk)
   .settings(
     name := "jira4s",
     publish := {},
