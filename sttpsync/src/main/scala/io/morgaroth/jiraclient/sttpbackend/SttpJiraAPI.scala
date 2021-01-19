@@ -2,28 +2,28 @@ package io.morgaroth.jiraclient.sttpbackend
 
 import cats.Monad
 import cats.data.EitherT
-import cats.instances.future.catsStdInstancesForFuture
 import cats.syntax.either._
 import com.typesafe.scalalogging.{LazyLogging, Logger}
 import io.morgaroth.jiraclient
 import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.query.syntax.JiraRequest
 import org.slf4j.LoggerFactory
-import sttp.client._
+import sttp.client3._
+import sttp.client3.httpclient.HttpClientSyncBackend
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext)
-    extends JiraRestAPI[Future]
+    extends JiraRestAPI[cats.Id]
     with LazyLogging {
 
-  implicit override val m: Monad[Future] = implicitly[Monad[Future]]
+  override val m: Monad[cats.Id] = cats.catsInstancesForId
 
-  implicit val backend: SttpBackend[Try, Nothing, NothingT] = TryHttpURLConnectionBackend()
-  private val requestsLogger                                = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
+  val backend                = HttpClientSyncBackend()
+  private val requestsLogger = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
 
-  override def invokeRequest(requestData: JiraRequest)(implicit requestId: RequestId): EitherT[Future, JiraError, String] = {
+  override def invokeRequest(requestData: JiraRequest)(implicit requestId: RequestId): EitherT[cats.Id, JiraError, String] = {
     val u = requestData.render
     val requestWithoutPayload = basicRequest
       .method(requestData.method, uri"$u")
@@ -38,9 +38,7 @@ class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit
     if (apiConfig.debug) logger.debug(s"request to send: $request")
     requestsLogger.info(s"Request ID {}, request: {}, payload:\n{}", requestId.id, request.body("stripped"), request.body)
 
-    val response = request
-      .send()
-      .toEither
+    val response = Try(request.send(backend)).toEither
       .leftMap[JiraError](RequestingError("try-http-backend-left", requestId.id, _))
       .flatMap { response =>
         if (apiConfig.debug) logger.debug(s"received response: $response")
@@ -56,6 +54,6 @@ class SttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit
         )
       }
 
-    EitherT.fromEither[Future](response)
+    EitherT.fromEither[cats.Id](response)
   }
 }

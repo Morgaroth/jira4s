@@ -4,17 +4,13 @@ import io.morgaroth.jiraclient._
 import io.morgaroth.jiraclient.createmodels.{CreateJiraIssue, JiraIssueId, JiraProjectId, PriorityId}
 import io.morgaroth.jiraclient.models.IssueKey
 import org.scalatest.DoNotDiscover
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.time.{Minutes, Span}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @DoNotDiscover
-class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with HelperClasses {
-
-  implicit override def patienceConfig: PatienceConfig = PatienceConfig(Span(1, Minutes))
+class SttpJiraAPITest extends AnyFlatSpec with Matchers with HelperClasses {
 
   private val jiraAddress = Option(System.getenv("JIRA_ADDRESS"))
   private val jiraLogin   = Option(System.getenv("JIRA_USERNAME"))
@@ -39,13 +35,13 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
       Some(PriorityId.Critical),
       Map("customfield_12120" -> "MDT2-1"),
     )
-    val response = client.createIssue(payload).value.futureValue.rightValue
+    val response = client.createIssue(payload).value.rightValue
     //    val moved = client.moveIssuesToEpic(IssueKey(""), Vector(IssueKey(response.id)))
     println(response)
   }
 
   it should "get ticket" in {
-    val ticket = client.getIssue(IssueKey("MDT2-1444")).value.futureValue.rightValue
+    val ticket = client.getIssue(IssueKey("MDT2-1444")).value.rightValue
     println(ticket)
   }
 
