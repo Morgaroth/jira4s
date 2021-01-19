@@ -1,16 +1,17 @@
 package io.morgaroth.jiraclient.models
 
+import io.circe.Codec
+import io.morgaroth.jiraclient.marshalling.{EnumMarshalling, EnumMarshallingGlue}
+
 trait JiraEnum {
   def name: String
 }
 
 sealed trait IssueStatus extends JiraEnum
 
-object IssueStatus {
-  val all: Seq[IssueStatus]            = Seq(Open, Closed)
-  val byName: Map[String, IssueStatus] = all.map(x => x.name -> x).toMap
-
-  def fromRepr(repr: String): IssueStatus = byName.getOrElse(repr, Unknown(repr))
+object IssueStatus extends EnumMarshallingGlue[IssueStatus] {
+  val all    = Seq(Open, Closed)
+  val byName = all.map(x => x.name -> x).toMap
 
   case object Open extends IssueStatus {
     override val name: String = "OPEN"
@@ -20,13 +21,14 @@ object IssueStatus {
     override val name: String = "CLOSED"
   }
 
-  case class Unknown(name: String) extends IssueStatus
+  override def rawValue = _.name
 
+  implicit val IssueStatusCirceCodec: Codec[IssueStatus] = EnumMarshalling.stringEnumCodecOf(IssueStatus)
 }
 
 sealed trait Resolution extends JiraEnum
 
-object Resolution {
+object Resolution extends EnumMarshallingGlue[Resolution] {
   val all: Seq[Resolution] = Seq(
     Complete,
     Invalid,
@@ -47,8 +49,6 @@ object Resolution {
   )
 
   val byName: Map[String, Resolution] = all.map(x => x.name -> x).toMap
-
-  def fromRepr(repr: String): Resolution = byName.getOrElse(repr, Unknown(repr))
 
   abstract class ResolutionBase(val name: String) extends Resolution
 
@@ -87,6 +87,8 @@ object Resolution {
   // special one, it is a set of statuses, usable only for querying
   case object Unresolved extends ResolutionBase("unresolved")
 
-  case class Unknown(name: String) extends Resolution
+  override def rawValue = _.name
+
+  implicit val ResolutionCirceCodec: Codec[Resolution] = EnumMarshalling.stringEnumCodecOf(Resolution)
 
 }
