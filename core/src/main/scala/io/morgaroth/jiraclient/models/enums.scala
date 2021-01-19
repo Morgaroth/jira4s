@@ -7,11 +7,10 @@ trait JiraEnum {
 sealed trait IssueStatus extends JiraEnum
 
 object IssueStatus {
-  val all: Seq[IssueStatus] = Seq(Open, Closed)
+  val all: Seq[IssueStatus]            = Seq(Open, Closed)
   val byName: Map[String, IssueStatus] = all.map(x => x.name -> x).toMap
 
   def fromRepr(repr: String): IssueStatus = byName.getOrElse(repr, Unknown(repr))
-
 
   case object Open extends IssueStatus {
     override val name: String = "OPEN"
@@ -25,12 +24,27 @@ object IssueStatus {
 
 }
 
-
 sealed trait Resolution extends JiraEnum
 
 object Resolution {
-  val all: Seq[Resolution] = Seq(Complete, Invalid, ClosedToArchive, Rejected, Done, ReadyForTesting,
-    DeScopeFromSprint, PassedTesting, Released, Fixed, Resolved, WontDo, CannotReproduce, Duplicate, Deferred, WontFix)
+  val all: Seq[Resolution] = Seq(
+    Complete,
+    Invalid,
+    ClosedToArchive,
+    Rejected,
+    Done,
+    ReadyForTesting,
+    DeScopeFromSprint,
+    PassedTesting,
+    Released,
+    Fixed,
+    Resolved,
+    WontDo,
+    CannotReproduce,
+    Duplicate,
+    Deferred,
+    WontFix,
+  )
 
   val byName: Map[String, Resolution] = all.map(x => x.name -> x).toMap
 

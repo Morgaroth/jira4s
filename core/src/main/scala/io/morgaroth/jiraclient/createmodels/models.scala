@@ -2,32 +2,28 @@ package io.morgaroth.jiraclient.createmodels
 
 import io.circe.generic.extras.semiauto.deriveConfiguredEncoder
 import io.circe.{Encoder, Json}
-import io.morgaroth.jiraclient.marshalling.config
 import io.morgaroth.jiraclient.models.IssueKey
 
-
 case class CreateJiraIssue(
-                            project: JiraProjectId,
-                            summary: String,
-                            description: String,
-                            issuetype: JiraIssueId,
-                            labels: Option[Set[String]],
-                            priority: Option[PriorityId],
-                            customFields: Map[String, String],
-                          )
+    project: JiraProjectId,
+    summary: String,
+    description: String,
+    issuetype: JiraIssueId,
+    labels: Option[Set[String]],
+    priority: Option[PriorityId],
+    customFields: Map[String, String],
+)
 
 object CreateJiraIssue {
 
-  private val simpleEncoder = Encoder.forProduct6("project", "summary", "description", "issuetype", "labels", "priority")(
-    (e: CreateJiraIssue) => (e.project, e.summary, e.description, e.issuetype, e.labels, e.priority)
-  )
+  private val simpleEncoder =
+    Encoder.forProduct6("project", "summary", "description", "issuetype", "labels", "priority")((e: CreateJiraIssue) =>
+      (e.project, e.summary, e.description, e.issuetype, e.labels, e.priority),
+    )
 
-  implicit val CreateJiraIssueCirceEncoder: Encoder[CreateJiraIssue] = {
-    (a: CreateJiraIssue) =>
-      val obj = a.customFields.foldLeft(simpleEncoder.encodeObject(a)) {
-        case (acc, (k, v)) => acc.add(k, Json.fromString(v))
-      }
-      Json.fromJsonObject(obj)
+  implicit val CreateJiraIssueCirceEncoder: Encoder[CreateJiraIssue] = { (a: CreateJiraIssue) =>
+    val obj = a.customFields.foldLeft(simpleEncoder.encodeObject(a)) { case (acc, (k, v)) => acc.add(k, Json.fromString(v)) }
+    Json.fromJsonObject(obj)
   }
 }
 
@@ -57,7 +53,7 @@ object JiraIssueId {
 
   def name(value: String) = new JiraIssueId(None, Some(value))
 
-  val bug = name("Bug")
+  val bug  = name("Bug")
   val task = name("Task")
 }
 
@@ -68,9 +64,9 @@ object PriorityId {
 
   def name(value: String) = new PriorityId(Some(value))
 
-  val Trivial = name("Trivial")
-  val Minor = name("Minor")
-  val Major = name("Major")
+  val Trivial  = name("Trivial")
+  val Minor    = name("Minor")
+  val Major    = name("Major")
   val Critical = name("Critical")
 }
 

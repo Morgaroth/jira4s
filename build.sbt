@@ -1,10 +1,10 @@
-val circeVersion = "0.12.3"
-val circeExtVersion = "0.12.2"
+val circeVersion = "0.13.0"
+val circeExtVersion = "0.13.0"
 
 val validate = Def.taskKey[Unit]("Validates entire project")
 
-val projectScalaVersion = "2.13.3"
-val crossScalaVersionsValues = Seq("2.12.12", projectScalaVersion)
+val projectScalaVersion = "2.13.4"
+val crossScalaVersionsValues = Seq(projectScalaVersion, "2.12.12")
 
 val commonSettings = Seq(
   organization := "io.morgaroth",
@@ -38,7 +38,7 @@ val core = project
       "io.circe" %% "circe-parser" % circeVersion,
       "com.typesafe" % "config" % "1.4.1",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-      "org.scalatest" %% "scalatest" % "3.2.2" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.3" % Test,
     )
   )
 
@@ -53,15 +53,7 @@ val sttp = project.in(file("sttp")).dependsOn(core)
     )
   )
 
-val akka = project.in(file("akka-http")).dependsOn(core)
-  .settings(commonSettings: _*)
-  .settings(
-    name := "jira4s-akka-http",
-    libraryDependencies ++= Seq(
-    )
-  )
-
-val jira4s = project.in(file(".")).aggregate(core, sttp, akka)
+val jira4s = project.in(file(".")).aggregate(core, sttp)
   .settings(
     name := "jira4s",
     publish := {},

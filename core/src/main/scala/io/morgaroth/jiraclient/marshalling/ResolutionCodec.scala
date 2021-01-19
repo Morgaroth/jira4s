@@ -12,5 +12,3 @@ trait ResolutionCodec {
 
   implicit val resolutionEncoder: Encoder[Resolution] = Encoder.instance[Resolution](_.name.asJson)
 }
-
-

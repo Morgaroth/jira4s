@@ -1,9 +1,6 @@
 package io.morgaroth.jiraclient.query.jql.syntax
 
-import java.net.URLEncoder
-
 import scala.language.implicitConversions
-
 
 sealed trait JqlQEntry {
   val space = """ """
@@ -56,7 +53,6 @@ abstract class JqlLogicOperator(j1: JqlQEntry, o: String, j2: JqlQEntry) extends
     s"${j1.render}$space$op$space${j2.render}"
   }
 }
-
 
 abstract class JqlSetOperator(j1: String, o: String, j2: JqlQEntry) extends JqlQEntry {
   override lazy val render: String = {

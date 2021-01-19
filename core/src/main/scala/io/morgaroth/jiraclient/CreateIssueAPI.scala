@@ -15,15 +15,15 @@ trait CreateIssueAPI[F[_]] extends Jira4sMarshalling {
   // @see: https://community.atlassian.com/t5/Answers-Developer-Questions/How-to-create-an-issue-with-the-REST-API-and-immediatly-set-the/qaq-p/515174
   def createIssue(payload: CreateJiraIssue): EitherT[F, JiraError, JiraIssueShort] = {
     implicit val rId: RequestId = RequestId.newOne("create-issue")
-    val payloadReq = CreateJiraIssuePayload(payload)
-    val req = reqGen.post(s"$API/issue", MJson.write(payloadReq))
+    val payloadReq              = CreateJiraIssuePayload(payload)
+    val req                     = reqGen.post(s"$API/issue", MJson.write(payloadReq))
 
     invokeRequest(req).unmarshall[JiraIssueShort]
   }
 
   def moveIssuesToEpic(epic: IssueKey, issues: Vector[IssueKey]): EitherT[F, JiraError, String] = {
     implicit val rId: RequestId = RequestId.newOne("move-issues-to-epic")
-    val req = reqGen.post(s"$API1/epic/$epic/issue", MJson.write(IssuesPayload(issues)))
+    val req                     = reqGen.post(s"$API1/epic/$epic/issue", MJson.write(IssuesPayload(issues)))
 
     invokeRequest(req)
   }

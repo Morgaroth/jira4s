@@ -14,17 +14,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @DoNotDiscover
 class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with HelperClasses {
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(1, Minutes))
+  implicit override def patienceConfig: PatienceConfig = PatienceConfig(Span(1, Minutes))
 
   private val jiraAddress = Option(System.getenv("jira-address"))
-  private val jiraLogin = Option(System.getenv("jira-login"))
-  private val jiraToken = Option(System.getenv("jira-access-token"))
+  private val jiraLogin   = Option(System.getenv("jira-login"))
+  private val jiraToken   = Option(System.getenv("jira-access-token"))
   assume(jiraAddress.isDefined, "jira-address env must be set for this test")
   assume(jiraLogin.isDefined, "jira-login env must be set for this test")
   assume(jiraToken.isDefined, "jira-access-token env must be set for this test")
 
   private val cfg = JiraConfig(jiraAddress.get, jiraLogin.get, jiraToken.get)
-  val client = new SttpJiraAPI(cfg, JiraRestAPIConfig(true))
+  val client      = new SttpJiraAPI(cfg, JiraRestAPIConfig(true))
 
   behavior of "SttpJiraAPI"
 
@@ -37,7 +37,7 @@ class SttpJiraAPITest extends AnyFlatSpec with Matchers with ScalaFutures with H
       JiraIssueId.bug,
       Some(Set("label-1", "label-2")),
       Some(PriorityId.Critical),
-      Map("customfield_12120" -> "MDT2-1")
+      Map("customfield_12120" -> "MDT2-1"),
     )
     val response = client.createIssue(payload).value.futureValue.rightValue
     //    val moved = client.moveIssuesToEpic(IssueKey(""), Vector(IssueKey(response.id)))

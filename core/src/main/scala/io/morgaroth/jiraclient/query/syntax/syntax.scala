@@ -1,10 +1,9 @@
 package io.morgaroth.jiraclient.query.syntax
 
-import java.net.URLEncoder
-
 import io.morgaroth.jiraclient.JiraConfig
 import io.morgaroth.jiraclient.query.jql.syntax.JqlQEntry
 
+import java.net.URLEncoder
 import scala.language.implicitConversions
 
 sealed trait JiraQuery {
@@ -60,13 +59,13 @@ object Methods {
 }
 
 case class JiraRequest(
-                        service: String,
-                        authToken: String,
-                        method: Method,
-                        path: String,
-                        query: Vector[JiraQuery],
-                        payload: Option[String],
-                      ) {
+    service: String,
+    authToken: String,
+    method: Method,
+    path: String,
+    query: Vector[JiraQuery],
+    payload: Option[String],
+) {
   lazy val render: String = {
     val base = s"$service/$path"
     if (query.nonEmpty) {

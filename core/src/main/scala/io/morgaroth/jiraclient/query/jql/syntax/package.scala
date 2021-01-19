@@ -6,13 +6,14 @@ import scala.language.implicitConversions
 
 package object syntax {
 
-
   implicit class HigherSyntax(left: JqlQEntry) {
     def and(right: JqlQEntry): JqlQEntry =
-      if (left.isNothing) right else right match {
-        case JqlNothing => left
-        case _ => JqlAnd(left, right)
-      }
+      if (left.isNothing) right
+      else
+        right match {
+          case JqlNothing => left
+          case _          => JqlAnd(left, right)
+        }
 
     def or(right: JqlQEntry): JqlQEntry = JqlOr(left, right)
 

@@ -2,8 +2,6 @@ package io.morgaroth.jiraclient.models
 
 import io.circe.Decoder
 import io.circe.generic.extras.semiauto.deriveConfiguredDecoder
-import io.morgaroth.jiraclient.marshalling.config
-import org.joda.time.DateTime
 
 trait JiraPaginatedResponse[T] {
   def startAt: Int
@@ -34,21 +32,22 @@ object JiraIssueShort {
 case class JiraIssueWithWorklog(id: String, self: String, key: IssueKey, fields: JiraIssueFieldsWork)
 
 case class JiraIssueFields(
-                            project: JiraProject,
-                            resolution: Option[JiraResolutionObj],
-                            labels: Set[String],
-                            description: Option[String],
-                            summary: String,
-                            status: JiraStatusObj,
-                            creator: JiraUser,
-                            assignee: Option[JiraUser],
-                            reporter: JiraUser,
-                            issuetype: JiraIssueType,
-                          )
+    project: JiraProject,
+    resolution: Option[JiraResolutionObj],
+    labels: Set[String],
+    description: Option[String],
+    summary: String,
+    status: JiraStatusObj,
+    creator: JiraUser,
+    assignee: Option[JiraUser],
+    reporter: JiraUser,
+    issuetype: JiraIssueType,
+)
 
 case class JiraIssueFieldsWork(project: JiraProject, worklog: JiraWorklogs)
 
-case class JiraPaginatedIssues(startAt: Int, maxResults: Int, total: Int, isLast: Option[Boolean], issues: Vector[JiraIssue]) extends JiraPaginatedResponse[JiraIssue] {
+case class JiraPaginatedIssues(startAt: Int, maxResults: Int, total: Int, isLast: Option[Boolean], issues: Vector[JiraIssue])
+    extends JiraPaginatedResponse[JiraIssue] {
   override def values: Vector[JiraIssue] = issues
 }
 
@@ -62,55 +61,56 @@ case class JiraIssueType(self: String, id: String, description: String, iconUrl:
 
 case class JiraWorklog(author: JiraUser, started: DateTime, timeSpentSeconds: Long, id: String)
 
-case class JiraWorklogs(startAt: Int, maxResults: Int, total: Int, worklogs: Vector[JiraWorklog]) extends JiraPaginatedResponse[JiraWorklog] {
+case class JiraWorklogs(startAt: Int, maxResults: Int, total: Int, worklogs: Vector[JiraWorklog])
+    extends JiraPaginatedResponse[JiraWorklog] {
   override def values: Vector[JiraWorklog] = worklogs
 }
 
 case class JiraUser(
-                     self: String,
-                     name: String,
-                     key: String,
-                     emailAddress: String,
-                     displayName: Option[String],
-                     active: Boolean,
-                     timeZone: String,
-                   )
+    self: String,
+    name: String,
+    key: String,
+    emailAddress: String,
+    displayName: Option[String],
+    active: Boolean,
+    timeZone: String,
+)
 
 case class RemoteIssueLinkIdentifies(id: Long, self: String)
 
 case class JiraRemoteLink(
-                           id: Option[Int],
-                           self: String,
-                           globalId: Option[String],
-                           application: Option[JiraApplication],
-                           relationship: Option[String],
-                           `object`: RemoteLinkObject
-                         )
+    id: Option[Int],
+    self: String,
+    globalId: Option[String],
+    application: Option[JiraApplication],
+    relationship: Option[String],
+    `object`: RemoteLinkObject,
+)
 
 case class CreateJiraRemoteLink(
-                                 globalId: String,
-                                 application: Option[JiraApplication],
-                                 relationship: Option[String],
-                                 `object`: RemoteLinkObject
-                               )
+    globalId: String,
+    application: Option[JiraApplication],
+    relationship: Option[String],
+    `object`: RemoteLinkObject,
+)
 
 case class JiraApplication(`type`: Option[String], name: Option[String])
 
 case class RemoteLinkObject(
-                             url: String,
-                             title: String,
-                             summary: Option[String],
-                             icon: Option[Icon],
-                             status: Option[JiraRemoteLinkStatus]
-                           )
+    url: String,
+    title: String,
+    summary: Option[String],
+    icon: Option[Icon],
+    status: Option[JiraRemoteLinkStatus],
+)
 
 case class JiraRemoteLinkStatus(resolved: Option[Boolean], icon: Option[Icon])
 
 case class Icon(
-                 url16x16: Option[String],
-                 title: Option[String],
-                 link: Option[String],
-               )
+    url16x16: Option[String],
+    title: Option[String],
+    link: Option[String],
+)
 
 trait Relationship {
   def raw: String
@@ -128,4 +128,13 @@ case class JTempoIssue(key: String, id: Long, summary: String, issueType: JTempo
 
 case class JTempoUser(displayName: String, avatar: String, self: String, key: String)
 
-case class JTempoWorklog(id: Long, self: String, issue: JTempoIssue, timeSpentSeconds: Long, dateStarted: DateTime, project: Option[JiraProject], author: JTempoUser, jiraWorklogId: Option[Long])
+case class JTempoWorklog(
+    id: Long,
+    self: String,
+    issue: JTempoIssue,
+    timeSpentSeconds: Long,
+    dateStarted: DateTime,
+    project: Option[JiraProject],
+    author: JTempoUser,
+    jiraWorklogId: Option[Long],
+)
