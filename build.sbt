@@ -1,22 +1,27 @@
 val circeVersion    = "0.13.0"
 val circeExtVersion = "0.13.0"
 
-val projectScalaVersion      = "2.13.4"
-val crossScalaVersionsValues = Seq(projectScalaVersion, "2.12.12")
+val projectScalaVersion      = "2.13.6"
+val crossScalaVersionsValues = Seq(projectScalaVersion, "2.12.13")
 
-val commonSettings = Seq(
-  organization := "io.morgaroth",
+val publishSettings = Seq(
   scalaVersion := projectScalaVersion,
   crossScalaVersions := crossScalaVersionsValues,
-  resolvers ++= Seq(
-    ("Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/").withAllowInsecureProtocol(true),
-    Resolver.bintrayRepo("morgaroth", "maven").withAllowInsecureProtocol(true),
-  ),
+  credentials += Credentials(file(sys.env.getOrElse("JFROG_CREDENTIALS_FILE", ".credentials"))),
+  publishTo := Some {
+    if (!isSnapshot.value) "Artifactory releases" at "https://jajemateuszdev.jfrog.io/artifactory/maven/"
+    else "Artifactory snapshots" at s"https://jajemateuszdev.jfrog.io/artifactory/maven;build.timestamp=${new java.util.Date().getTime}"
+  },
+  publishMavenStyle  := true,
+  versionScheme      := Some("semver-spec"),
+)
+
+val commonSettings = publishSettings ++ Seq(
+  organization := "io.morgaroth",
+  resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
   logBuffered := false,
-  // Bintray
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  bintrayVcsUrl := Some("https://gitlab.com/morgaroth/jira4s.git"),
 )
 
 val core = project
@@ -54,6 +59,7 @@ val sttpjdk = project
 val jira4s = project
   .in(file("."))
   .aggregate(core, sttpjdk)
+  .settings(publishSettings)
   .settings(
     name := "jira4s",
     publish := {},
