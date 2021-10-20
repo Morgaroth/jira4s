@@ -46,6 +46,7 @@ object Resolution extends EnumMarshallingGlue[Resolution] {
     Duplicate,
     Deferred,
     WontFix,
+    Successful,
   )
 
   val byName: Map[String, Resolution] = all.map(x => x.name -> x).toMap
@@ -83,6 +84,8 @@ object Resolution extends EnumMarshallingGlue[Resolution] {
   case object Deferred extends ResolutionBase("Deferred")
 
   case object WontFix extends ResolutionBase("Won't Fix")
+
+  case object Successful extends ResolutionBase("Successful")
 
   // special one, it is a set of statuses, usable only for querying
   case object Unresolved extends ResolutionBase("unresolved")

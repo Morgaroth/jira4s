@@ -27,7 +27,7 @@ Check formatting:
 Release next version:
   stage: publish
   only:
-    - master
+    - main
   script:
     - apt update
     - apt install --no-install-recommends -y dnsutils netcat-openbsd
