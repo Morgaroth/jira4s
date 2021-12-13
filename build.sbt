@@ -1,3 +1,7 @@
+import Syntax._
+import com.jsuereth.sbtpgp.PgpKeys.publishSigned
+import xerial.sbt.Sonatype.GitLabHosting
+
 val circeVersion    = "0.13.0"
 val circeExtVersion = "0.13.0"
 
@@ -5,23 +9,40 @@ val projectScalaVersion      = "2.13.6"
 val crossScalaVersionsValues = Seq(projectScalaVersion, "2.12.13")
 
 val publishSettings = Seq(
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  sonatypeProjectHosting := Some(GitLabHosting("mateuszjaje", "jira4s", "mateuszjaje@gmail.com")),
+  developers := List(Developer("mjd", "Mateusz Jaje", "mateuszjaje@gmail.com", new URL("https://gitlab.com/mateuszjajedev"))),
   scalaVersion := projectScalaVersion,
   crossScalaVersions := crossScalaVersionsValues,
-  credentials += Credentials(file(sys.env.getOrElse("JFROG_CREDENTIALS_FILE", ".credentials"))),
-  publishTo := Some {
-    if (!isSnapshot.value) "Artifactory releases" at "https://jajemateuszdev.jfrog.io/artifactory/maven/"
-    else "Artifactory snapshots" at s"https://jajemateuszdev.jfrog.io/artifactory/maven;build.timestamp=${new java.util.Date().getTime}"
+  publishTo := sonatypePublishToBundle.value,
+  publishMavenStyle := true,
+  versionScheme := Some("semver-spec"),
+  sonatypeCredentialHost := "s01.oss.sonatype.org",
+  releaseProcess := {
+    import sbtrelease.ReleaseStateTransformations._
+    Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges,
+    )
   },
-  publishMavenStyle  := true,
-  versionScheme      := Some("semver-spec"),
 )
 
 val commonSettings = publishSettings ++ Seq(
-  organization := "io.morgaroth",
+  organization := "io.gitlab.mateuszjaje",
   resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+  idePackagePrefix.invisible := Some("io.gitlab.mateuszjaje.jiraclient"),
   logBuffered := false,
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
 )
 
 val core = project
@@ -61,11 +82,13 @@ val jira4s = project
   .aggregate(core, sttpjdk)
   .settings(publishSettings)
   .settings(
+    organization := "io.gitlab.mateuszjaje",
     name := "jira4s",
     publish := {},
+    publishSigned := {},
     crossScalaVersions := crossScalaVersionsValues,
-    releaseTagComment := s"Releasing ${(version in ThisBuild).value} [skip ci]",
-    releaseCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
-    releaseNextCommitMessage := s"Setting version to ${(version in ThisBuild).value} [skip ci]",
+    releaseTagComment := s"Releasing ${(ThisBuild / version).value} [skip ci]",
+    releaseCommitMessage := s"Setting version to ${(ThisBuild / version).value} [skip ci]",
+    releaseNextCommitMessage := s"Setting version to ${(ThisBuild / version).value} [skip ci]",
     releaseCrossBuild := true,
   )

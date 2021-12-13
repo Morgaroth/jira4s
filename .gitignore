@@ -9,3 +9,4 @@
 /.sbt
 /.ssh
 /.bsp
+/sonatype-creds.sbt
