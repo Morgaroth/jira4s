@@ -12,8 +12,8 @@ trait JiraEnum {
 sealed trait IssueStatus extends JiraEnum
 
 object IssueStatus extends EnumMarshallingGlue[IssueStatus] {
-  val all    = Seq(Open, Closed)
-  val byName = all.map(x => x.name -> x).toMap
+  val all: Seq[IssueStatus]            = Seq(Open, Closed)
+  val byName: Map[String, IssueStatus] = all.map(x => x.name -> x).toMap
 
   case object Open extends IssueStatus {
     override val name: String = "OPEN"
@@ -23,7 +23,7 @@ object IssueStatus extends EnumMarshallingGlue[IssueStatus] {
     override val name: String = "CLOSED"
   }
 
-  override def rawValue = _.name
+  override def rawValue: IssueStatus => String = _.name
 
   implicit val IssueStatusCirceCodec: Codec[IssueStatus] = EnumMarshalling.stringEnumCodecOf(IssueStatus)
 }
@@ -49,6 +49,7 @@ object Resolution extends EnumMarshallingGlue[Resolution] {
     Deferred,
     WontFix,
     Successful,
+    RollbackNonDisruptive,
   )
 
   val byName: Map[String, Resolution] = all.map(x => x.name -> x).toMap
@@ -89,11 +90,16 @@ object Resolution extends EnumMarshallingGlue[Resolution] {
 
   case object Successful extends ResolutionBase("Successful")
 
+  case object RollbackNonDisruptive extends ResolutionBase("Rollback - NonDisruptive")
+
   // special one, it is a set of statuses, usable only for querying
   case object Unresolved extends ResolutionBase("unresolved")
 
-  override def rawValue = _.name
+  // another special one, to not limit ourselves
+  case class Unhardcoded(someName: String) extends ResolutionBase(someName)
 
-  implicit val ResolutionCirceCodec: Codec[Resolution] = EnumMarshalling.stringEnumCodecOf(Resolution)
+  override def rawValue: Resolution => String = _.name
+
+  implicit val ResolutionCirceCodec: Codec[Resolution] = EnumMarshalling.safeStringEnumCodecOf(Resolution, Unhardcoded)
 
 }
