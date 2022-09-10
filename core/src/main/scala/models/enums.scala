@@ -100,6 +100,6 @@ object Resolution extends EnumMarshallingGlue[Resolution] {
 
   override def rawValue: Resolution => String = _.name
 
-  implicit val ResolutionCirceCodec: Codec[Resolution] = EnumMarshalling.safeStringEnumCodecOf(Resolution, Unhardcoded)
+  implicit val ResolutionCirceCodec: Codec[Resolution] = EnumMarshalling.safeStringEnumCodecOf(Resolution, Unhardcoded.apply)
 
 }
