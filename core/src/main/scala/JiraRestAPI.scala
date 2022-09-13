@@ -9,6 +9,7 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import io.circe.generic.auto._
+import io.gitlab.mateuszjaje.jiraclient.apis.{CreateIssueAPI, UpdateIssueAPI}
 
 import scala.language.{higherKinds, postfixOps}
 

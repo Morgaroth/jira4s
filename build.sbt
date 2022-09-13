@@ -2,11 +2,11 @@ import Syntax._
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import xerial.sbt.Sonatype.GitLabHosting
 
-val circeVersion = "0.14.2"
+val circeVersion    = "0.14.2"
 val circeExtVersion = "0.14.2"
-val scalatest = "3.2.13"
+val scalatest       = "3.2.13"
 
-val projectScalaVersion = "2.13.8"
+val projectScalaVersion      = "2.13.8"
 val crossScalaVersionsValues = Seq(projectScalaVersion, "3.2.0")
 
 val publishSettings = Seq(
@@ -52,14 +52,14 @@ val core = project
   .settings(
     name := "jira4s-core",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "2.8.0",
-      "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-parser" % circeVersion,
-      "com.typesafe" % "config" % "1.4.2",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-      "org.scalatest" %% "scalatest-flatspec" % scalatest % Test,
-      "org.scalatest" %% "scalatest-shouldmatchers" % scalatest % Test,
+      "org.typelevel"              %% "cats-core"                % "2.8.0",
+      "io.circe"                   %% "circe-core"               % circeVersion,
+      "io.circe"                   %% "circe-generic"            % circeVersion,
+      "io.circe"                   %% "circe-parser"             % circeVersion,
+      "com.typesafe"                % "config"                   % "1.4.2",
+      "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.5",
+      "org.scalatest"              %% "scalatest-flatspec"       % scalatest % Test,
+      "org.scalatest"              %% "scalatest-shouldmatchers" % scalatest % Test,
     ),
   )
 
@@ -70,11 +70,11 @@ val sttpjdk = project
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
-      "com.softwaremill.sttp.client3" %% "httpclient-backend" % "3.5.2",
-      "org.scalatest" %% "scalatest-flatspec" % scalatest % Test,
-      "org.scalatest" %% "scalatest-shouldmatchers" % scalatest % Test,
-      "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
+      "com.softwaremill.sttp.client3" %% "core"                     % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "httpclient-backend"       % "3.5.2",
+      "org.scalatest"                 %% "scalatest-flatspec"       % scalatest % Test,
+      "org.scalatest"                 %% "scalatest-shouldmatchers" % scalatest % Test,
+      "ch.qos.logback"                 % "logback-classic"          % "1.2.11"  % Test,
     ),
   )
 

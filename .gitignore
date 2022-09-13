@@ -4,6 +4,7 @@
 /project/target
 /core/target
 /sttp/target
+/sttpjdk/target
 /akka-http/target
 /.ivy2
 /.sbt

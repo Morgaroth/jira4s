@@ -1,4 +1,5 @@
 package io.gitlab.mateuszjaje.jiraclient
+package apis
 
 import marshalling.Jira4sMarshalling
 import models.IssueKey

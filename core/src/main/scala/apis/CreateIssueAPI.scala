@@ -1,12 +1,11 @@
 package io.gitlab.mateuszjaje.jiraclient
+package apis
 
 import createmodels.{CreateJiraIssue, CreateJiraIssuePayload, IssuesPayload}
 import marshalling.Jira4sMarshalling
 import models.{IssueKey, JiraIssueShort}
 
 import cats.data.EitherT
-
-import scala.language.postfixOps
 
 trait CreateIssueAPI[F[_]] extends Jira4sMarshalling {
   self: JiraRestAPI[F] =>
