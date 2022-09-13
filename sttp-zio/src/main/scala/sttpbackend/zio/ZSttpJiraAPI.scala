@@ -10,13 +10,13 @@ import org.slf4j.LoggerFactory
 import sttp.capabilities
 import sttp.capabilities.zio.ZioStreams
 import sttp.client3.httpclient.zio.HttpClientZioBackend
-import sttp.client3.{SttpBackend, UriContext, basicRequest}
+import sttp.client3.{basicRequest, SttpBackend, UriContext}
 import zio.{Task, UIO, ZIO}
 
 import scala.concurrent.ExecutionContext
 
 class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext)
-  extends JiraRestAPIV2[UIO]
+    extends JiraRestAPIV2[UIO]
     with LazyLogging {
 
   implicit override def m: ThisMonad[UIO] = new ThisMonad[UIO] {
@@ -38,7 +38,7 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
 
     override def tailRecM[A, B](a: A)(f: A => AAA[UIO, Either[A, B]]): AAA[UIO, B] = {
       flatMap(f(a)) {
-        case Left(a) => tailRecM(a)(f)
+        case Left(a)  => tailRecM(a)(f)
         case Right(b) => pure(b)
       }
     }
@@ -46,16 +46,16 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
     override def sequence[A](x: Vector[UIO[Either[JiraError, A]]]): AAA[UIO, Vector[A]] = {
       ZIO.foreach(x)(identity).map {
         _.foldLeft[Either[JiraError, Vector[A]]](Right(Vector.empty[A])) {
-          case (e@Left(_), _) => e
+          case (e @ Left(_), _)       => e
           case (Right(acc), Right(e)) => Right(acc :+ e)
-          case (_, Left(e)) => Left(e)
+          case (_, Left(e))           => Left(e)
         }
       }
     }
   }
 
   val backend: Task[SttpBackend[Task, ZioStreams & capabilities.WebSockets]] = HttpClientZioBackend()
-  private val requestsLogger = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
+  private val requestsLogger                                                 = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
 
   override def invokeRequest(requestData: JiraRequest)(implicit requestId: RequestId): UIO[Either[JiraError, String]] = {
     val u = requestData.render
@@ -81,7 +81,7 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
           s"Request ID {}, response: {}, payload:\n{}",
           requestId,
           response.copy(body = response.body match {
-            case Left(_) => "There is an error body"
+            case Left(_)  => "There is an error body"
             case Right(_) => "There is a success body"
           }),
           response.body.fold(identity, identity),

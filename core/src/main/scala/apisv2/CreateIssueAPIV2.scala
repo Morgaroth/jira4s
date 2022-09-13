@@ -2,10 +2,9 @@ package io.gitlab.mateuszjaje.jiraclient
 package apisv2
 
 import createmodels.{CreateJiraIssue, CreateJiraIssuePayload, IssuesPayload}
-import marshalling.Jira4sMarshalling
 import models.{IssueKey, JiraIssueShort}
 
-trait CreateIssueAPIV2[F[_]] extends Jira4sMarshalling {
+trait CreateIssueAPIV2[F[_]] {
   self: JiraRestAPIV2[F] =>
 
   // @see: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-post

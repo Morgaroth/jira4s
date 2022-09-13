@@ -42,7 +42,8 @@ val commonSettings = publishSettings ++ Seq(
   scalacOptions := Seq(
     "-unchecked",
     "-deprecation",
-    "-encoding", "utf8",
+    "-encoding",
+    "utf8",
     "-feature",
     "-language:higherKinds",
     "-language:postfixOps",
@@ -74,9 +75,9 @@ val commonSettings = publishSettings ++ Seq(
 )
 
 val testDeps = Seq(
-  "org.scalatest" %% "scalatest-flatspec" % "3.2.13" % Test,
+  "org.scalatest" %% "scalatest-flatspec"       % "3.2.13" % Test,
   "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.13" % Test,
-  "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
+  "ch.qos.logback" % "logback-classic"          % "1.2.11" % Test,
 )
 
 val core = project
@@ -84,11 +85,11 @@ val core = project
   .settings(
     name := "jira4s-core",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "2.8.0",
-      "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-parser" % circeVersion,
-      "com.typesafe" % "config" % "1.4.2",
+      "org.typelevel"              %% "cats-core"     % "2.8.0",
+      "io.circe"                   %% "circe-core"    % circeVersion,
+      "io.circe"                   %% "circe-generic" % circeVersion,
+      "io.circe"                   %% "circe-parser"  % circeVersion,
+      "com.typesafe"                % "config"        % "1.4.2",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     ) ++ testDeps,
   )
@@ -100,7 +101,7 @@ val sttpjdk = project
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "core"               % "3.7.6",
       "com.softwaremill.sttp.client3" %% "httpclient-backend" % "3.5.2",
     ) ++ testDeps,
   )
@@ -125,7 +126,7 @@ val sttpzio2 = project
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
-      "com.softwaremill.sttp.client3" %% "zio" % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "zio"  % "3.7.6",
     ) ++ testDeps,
   )
 

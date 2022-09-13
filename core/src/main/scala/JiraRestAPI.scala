@@ -8,8 +8,7 @@ import query.syntax.*
 
 import cats.Monad
 import cats.data.EitherT
-import cats.implicits.*
-import io.circe.generic.auto.*
+import cats.syntax.applicative.*
 
 trait JiraRestAPI[F[_]] extends Jira4sMarshalling with UpdateIssueAPI[F] with CreateIssueAPI[F] {
 
@@ -104,7 +103,7 @@ trait JiraRestAPI[F[_]] extends Jira4sMarshalling with UpdateIssueAPI[F] with Cr
       globalId,
       None,
       relationship.map(_.raw),
-      RemoteLinkObject(link, title, None, icon, JiraRemoteLinkStatus(resolved.some, None).some),
+      RemoteLinkObject(link, title, None, icon, Some(JiraRemoteLinkStatus(Some(resolved), None))),
     )
     val req = reqGen.post(API + s"/issue/$issueKey/remotelink", MJson.write(payload))
 

@@ -1,12 +1,11 @@
 package io.gitlab.mateuszjaje.jiraclient
 package apis
 
-import marshalling.Jira4sMarshalling
 import models.IssueKey
 
 import cats.data.EitherT
 
-trait UpdateIssueAPI[F[_]] extends Jira4sMarshalling {
+trait UpdateIssueAPI[F[_]] {
   self: JiraRestAPI[F] =>
 
   // @see: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-put

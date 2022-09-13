@@ -12,15 +12,18 @@ import io.circe.syntax.EncoderOps
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-//import scala.language.{higherKinds, implicitConversions}
 
-trait Jira4sMarshalling {
-
+trait Jira4sZonedDateTimeCodec {
   private val zonedDateTimeDecoders = Vector(
-    Decoder.decodeZonedDateTime,
     Decoder.decodeZonedDateTimeWithFormatter(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")),
+    Decoder.decodeZonedDateTime,
   ).reduce(_ or _)
+
   implicit val zonedDateTimeCodec: Codec[ZonedDateTime] = Codec.from(zonedDateTimeDecoders, Encoder.encodeZonedDateTime)
+
+}
+
+trait Jira4sMarshalling extends Jira4sZonedDateTimeCodec {
 
   object MJson {
     def read[T](str: String)(implicit d: Decoder[T]): Either[Error, T] = decode[T](str)

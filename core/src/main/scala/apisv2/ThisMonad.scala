@@ -52,7 +52,7 @@ object ThisMonad {
 
     def map[B](f: A => B): AAA[F, B] = typeClassInstance.map[A, B](self)(f)
 
-    def flatMap[B](f: A => AAA[F, B]): AAA[F, B]                 = typeClassInstance.flatMap[A, B](self)(f)
+    def flatMap[B](f: A => AAA[F, B]): AAA[F, B]               = typeClassInstance.flatMap[A, B](self)(f)
     def subFlatMap[B](f: A => Either[JiraError, B]): AAA[F, B] = typeClassInstance.subFlatMap(self)(f)
   }
 

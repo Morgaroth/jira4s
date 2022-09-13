@@ -6,12 +6,9 @@ import models.*
 import query.jql.syntax.*
 import query.syntax.*
 
-import io.circe.generic.auto.*
 import ThisMonad.syntax.*
 
-trait JiraRestAPIV2[F[_]] extends Jira4sMarshalling
-  with UpdateIssueAPIV2[F]
-  with CreateIssueAPIV2[F] {
+trait JiraRestAPIV2[F[_]] extends Jira4sMarshalling with UpdateIssueAPIV2[F] with CreateIssueAPIV2[F] {
 
   val API  = "rest/api/2"
   val API1 = "rest/agile/1.0"
@@ -59,7 +56,7 @@ trait JiraRestAPIV2[F[_]] extends Jira4sMarshalling
       invokeRequest(req).unmarshall[JiraPaginatedIssues]
     }
 
-    def getAll(startFrom: Int, acc: Vector[JiraIssue]):F[Either[JiraError, Vector[JiraIssue]]] = {
+    def getAll(startFrom: Int, acc: Vector[JiraIssue]): F[Either[JiraError, Vector[JiraIssue]]] = {
       getPage(startFrom).flatMap { resp =>
         val currentIssues = acc ++ resp.issues
         val currentCnt    = currentIssues.size
