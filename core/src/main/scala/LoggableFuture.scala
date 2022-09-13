@@ -3,7 +3,6 @@ package io.gitlab.mateuszjaje.jiraclient
 import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.implicitConversions
 import scala.util.Try
 
 case class LoggableFuture[T](f: Future[T], logger: Logger)(implicit ex: ExecutionContext) {

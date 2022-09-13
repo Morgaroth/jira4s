@@ -5,6 +5,8 @@
 /core/target
 /sttp/target
 /sttpjdk/target
+/sttp-zio/target
+/sttp-zio1/target
 /akka-http/target
 /.ivy2
 /.sbt

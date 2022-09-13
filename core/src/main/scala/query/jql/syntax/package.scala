@@ -4,8 +4,6 @@ package jql
 
 import models.JiraEnum
 
-import scala.language.implicitConversions
-
 package object syntax {
 
   implicit class HigherSyntax(left: JqlQEntry) {

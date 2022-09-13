@@ -1,8 +1,9 @@
 package io.gitlab.mateuszjaje.jiraclient
+package sttpbackend
 
 import query.syntax.{Method, Methods}
 
-package object sttpbackend {
+package object zio {
 
   implicit def convertJiraMethodToSttpMethod(in: Method): sttp.model.Method = in match {
     case Methods.Get => sttp.model.Method.GET

@@ -7,7 +7,7 @@ val circeExtVersion = "0.14.2"
 val scalatest       = "3.2.13"
 
 val projectScalaVersion      = "2.13.8"
-val crossScalaVersionsValues = Seq(projectScalaVersion, "3.2.0")
+val crossScalaVersionsValues = Seq(projectScalaVersion, "3.1.2")
 
 val publishSettings = Seq(
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -39,12 +39,44 @@ val publishSettings = Seq(
 val commonSettings = publishSettings ++ Seq(
   organization := "io.gitlab.mateuszjaje",
   resolvers += "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
-  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+  scalacOptions := Seq(
+    "-unchecked",
+    "-deprecation",
+    "-encoding", "utf8",
+    "-feature",
+    "-language:higherKinds",
+    "-language:postfixOps",
+    "-language:implicitConversions",
+  ),
   scalacOptions ++= {
-    if (scalaVersion.value.startsWith("3.")) Seq("-Xmax-inlines", "64") else Seq.empty
+    if (scalaVersion.value.startsWith("2.13")) {
+      Seq(
+        "-Ymacro-annotations",
+        "-Ywarn-unused:imports",
+        "-Xsource:3",
+        "-P:kind-projector:underscore-placeholders",
+      )
+    } else if (scalaVersion.value.startsWith("3.")) {
+      Seq(
+        "-Ykind-projector",
+        "-Xmax-inlines",
+        "110",
+      )
+    } else Seq.empty
+  },
+  libraryDependencies ++= {
+    if (scalaVersion.value.startsWith("2.13"))
+      Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full))
+    else Seq.empty
   },
   idePackagePrefix.invisible := Some("io.gitlab.mateuszjaje.jiraclient"),
   logBuffered := false,
+)
+
+val testDeps = Seq(
+  "org.scalatest" %% "scalatest-flatspec" % "3.2.13" % Test,
+  "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.13" % Test,
+  "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
 )
 
 val core = project
@@ -52,15 +84,13 @@ val core = project
   .settings(
     name := "jira4s-core",
     libraryDependencies ++= Seq(
-      "org.typelevel"              %% "cats-core"                % "2.8.0",
-      "io.circe"                   %% "circe-core"               % circeVersion,
-      "io.circe"                   %% "circe-generic"            % circeVersion,
-      "io.circe"                   %% "circe-parser"             % circeVersion,
-      "com.typesafe"                % "config"                   % "1.4.2",
-      "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.5",
-      "org.scalatest"              %% "scalatest-flatspec"       % scalatest % Test,
-      "org.scalatest"              %% "scalatest-shouldmatchers" % scalatest % Test,
-    ),
+      "org.typelevel" %% "cats-core" % "2.8.0",
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
+      "com.typesafe" % "config" % "1.4.2",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
+    ) ++ testDeps,
   )
 
 val sttpjdk = project
@@ -70,17 +100,38 @@ val sttpjdk = project
   .settings(
     name := "jira4s-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core"                     % "3.7.6",
-      "com.softwaremill.sttp.client3" %% "httpclient-backend"       % "3.5.2",
-      "org.scalatest"                 %% "scalatest-flatspec"       % scalatest % Test,
-      "org.scalatest"                 %% "scalatest-shouldmatchers" % scalatest % Test,
-      "ch.qos.logback"                 % "logback-classic"          % "1.2.11"  % Test,
-    ),
+      "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "httpclient-backend" % "3.5.2",
+    ) ++ testDeps,
+  )
+
+val sttpzio1 = project
+  .in(file("sttp-zio1"))
+  .dependsOn(core)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "jira4s-sttp",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "zio1" % "3.7.6", // for ZIO 1.x
+    ) ++ testDeps,
+  )
+
+val sttpzio2 = project
+  .in(file("sttp-zio"))
+  .dependsOn(core)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "jira4s-sttp",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client3" %% "core" % "3.7.6",
+      "com.softwaremill.sttp.client3" %% "zio" % "3.7.6",
+    ) ++ testDeps,
   )
 
 val jira4s = project
   .in(file("."))
-  .aggregate(core, sttpjdk)
+  .aggregate(core, sttpjdk, sttpzio2, sttpzio1)
   .settings(publishSettings)
   .settings(
     organization := "io.gitlab.mateuszjaje",

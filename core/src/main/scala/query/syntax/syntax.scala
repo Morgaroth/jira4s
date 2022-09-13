@@ -5,7 +5,6 @@ package syntax
 import query.jql.syntax.JqlQEntry
 
 import java.net.URLEncoder
-import scala.language.implicitConversions
 
 sealed trait JiraQuery {
   def render: String

@@ -3,8 +3,6 @@ package query
 package jql
 package syntax
 
-import scala.language.implicitConversions
-
 sealed trait JqlQEntry {
   val space = """ """
   val equal = "="
