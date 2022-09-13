@@ -1,7 +1,7 @@
 package io.gitlab.mateuszjaje.jiraclient
 package marshalling
 
-import apisv2.ThisMonad
+import apisv2.JiraApiT
 
 import cats.Monad
 import cats.data.EitherT
@@ -49,9 +49,9 @@ trait Jira4sMarshalling extends Jira4sZonedDateTimeCodec {
       data.flatMap(MJson.readT[F, TargetType])
   }
 
-  implicit class unmarshallFF[F[_]](data: F[Either[JiraError, String]])(implicit m: ThisMonad[F]) {
+  implicit class unmarshallFF[F[_]](data: F[Either[JiraError, String]])(implicit m: JiraApiT[F]) {
     def unmarshall[TargetType: Decoder](implicit rId: RequestId): F[Either[JiraError, TargetType]] =
-      ThisMonad.syntax.toOps(data).subFlatMap(MJson.readE[TargetType](_))
+      JiraApiT.syntax.toOps(data).subFlatMap(MJson.readE[TargetType](_))
   }
 }
 

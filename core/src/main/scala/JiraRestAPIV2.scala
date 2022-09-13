@@ -1,19 +1,19 @@
 package io.gitlab.mateuszjaje.jiraclient
 
-import apisv2.{CreateIssueAPIV2, ThisMonad, UpdateIssueAPIV2}
+import apisv2.{CreateIssueAPIV2, JiraApiT, UpdateIssueAPIV2}
 import marshalling.Jira4sMarshalling
 import models.*
 import query.jql.syntax.*
 import query.syntax.*
 
-import ThisMonad.syntax.*
+import JiraApiT.syntax.*
 
 trait JiraRestAPIV2[F[_]] extends Jira4sMarshalling with UpdateIssueAPIV2[F] with CreateIssueAPIV2[F] {
 
   val API  = "rest/api/2"
   val API1 = "rest/agile/1.0"
 
-  implicit def m: ThisMonad[F]
+  implicit def m: JiraApiT[F]
 
   def config: JiraConfig
 

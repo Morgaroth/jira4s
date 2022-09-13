@@ -1,7 +1,7 @@
 package io.gitlab.mateuszjaje.jiraclient
 package apisv2
 
-import apisv2.ThisMonad.syntax.*
+import apisv2.JiraApiT.syntax.*
 import models.IssueKey
 
 trait UpdateIssueAPIV2[F[_]] {

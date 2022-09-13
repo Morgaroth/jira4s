@@ -1,8 +1,7 @@
 package io.gitlab.mateuszjaje.jiraclient
 package sttpbackend.zio
 
-import apisv2.ThisMonad
-import apisv2.ThisMonad.AAA
+import apisv2.JiraApiT
 import query.syntax.JiraRequest
 
 import com.typesafe.scalalogging.{LazyLogging, Logger}
@@ -10,7 +9,7 @@ import org.slf4j.LoggerFactory
 import sttp.capabilities
 import sttp.capabilities.zio.ZioStreams
 import sttp.client3.httpclient.zio.HttpClientZioBackend
-import sttp.client3.{basicRequest, SttpBackend, UriContext}
+import sttp.client3.{SttpBackend, UriContext, basicRequest}
 import zio.{Task, UIO, ZIO}
 
 import scala.concurrent.ExecutionContext
@@ -19,13 +18,13 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
     extends JiraRestAPIV2[UIO]
     with LazyLogging {
 
-  implicit override def m: ThisMonad[UIO] = new ThisMonad[UIO] {
-    override def subFlatMap[A, B](fa: UIO[Either[JiraError, A]])(f: A => Either[JiraError, B]): AAA[UIO, B] =
+  implicit override def m: JiraApiT[UIO] = new JiraApiT[UIO] {
+    override def subFlatMap[A, B](fa: UIO[Either[JiraError, A]])(f: A => Either[JiraError, B]): UIO[Either[JiraError, B]] =
       fa.flatMap(x => ZIO.succeed(x.flatMap(f)))
 
     override def pure[A](x: A): UIO[Either[JiraError, A]] = ZIO.right(x)
 
-    override def flatMap[A, B](fa: AAA[UIO, A])(f: A => AAA[UIO, B]): AAA[UIO, B] = {
+    override def flatMap[A, B](fa: UIO[Either[JiraError, A]])(f: A => UIO[Either[JiraError, B]]): UIO[Either[JiraError, B]] = {
       fa.flatMap { (data: Either[JiraError, A]) =>
         data
           .map(f)
@@ -36,14 +35,14 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
       }
     }
 
-    override def tailRecM[A, B](a: A)(f: A => AAA[UIO, Either[A, B]]): AAA[UIO, B] = {
+    override def tailRecM[A, B](a: A)(f: A => UIO[Either[JiraError, Either[A, B]]]): UIO[Either[JiraError, B]] = {
       flatMap(f(a)) {
         case Left(a)  => tailRecM(a)(f)
         case Right(b) => pure(b)
       }
     }
 
-    override def sequence[A](x: Vector[UIO[Either[JiraError, A]]]): AAA[UIO, Vector[A]] = {
+    override def sequence[A](x: Vector[UIO[Either[JiraError, A]]]): UIO[Either[JiraError, Vector[A]]] = {
       ZIO.foreach(x)(identity).map {
         _.foldLeft[Either[JiraError, Vector[A]]](Right(Vector.empty[A])) {
           case (e @ Left(_), _)       => e
