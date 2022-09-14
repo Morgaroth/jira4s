@@ -6,16 +6,30 @@ import query.syntax.JiraRequest
 
 import com.typesafe.scalalogging.{LazyLogging, Logger}
 import org.slf4j.LoggerFactory
-import sttp.capabilities
-import sttp.capabilities.zio.ZioStreams
 import sttp.client3.httpclient.zio.HttpClientZioBackend
 import sttp.client3.{SttpBackend, UriContext, basicRequest}
-import zio.{Task, UIO, ZIO}
+import zio.{Task, UIO, URLayer, ZIO, ZLayer}
 
-import scala.concurrent.ExecutionContext
+object ZSttpJiraAPI {
+  def apply(config: JiraConfig): ZSttpJiraAPI =
+    new ZSttpJiraAPI(config, JiraRestAPIConfig(), HttpClientZioBackend())
 
-class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implicit ex: ExecutionContext)
-    extends JiraRestAPIV2[UIO]
+  def apply(config: JiraConfig, backend: SttpBackend[Task, Any]): ZSttpJiraAPI =
+    new ZSttpJiraAPI(config, JiraRestAPIConfig(), ZIO.succeed(backend))
+
+  val JiraApiLayer: ZLayer[JiraConfig & SttpBackend[Task, Any], Nothing, ZSttpJiraAPI] =
+    ZLayer.fromFunction(apply(_: JiraConfig, _: SttpBackend[Task, Any]))
+
+  val Default: URLayer[JiraConfig, ZSttpJiraAPI] =
+    ZLayer.fromFunction(apply(_: JiraConfig))
+
+}
+
+class ZSttpJiraAPI(
+    val config: JiraConfig,
+    apiConfig: JiraRestAPIConfig,
+    backend: Task[SttpBackend[Task, Any]],
+) extends JiraRestAPIV2[UIO]
     with LazyLogging {
 
   implicit override def m: JiraApiT[UIO] = new JiraApiT[UIO] {
@@ -53,8 +67,7 @@ class ZSttpJiraAPI(val config: JiraConfig, apiConfig: JiraRestAPIConfig)(implici
     }
   }
 
-  val backend: Task[SttpBackend[Task, ZioStreams & capabilities.WebSockets]] = HttpClientZioBackend()
-  private val requestsLogger                                                 = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
+  private val requestsLogger = Logger(LoggerFactory.getLogger(getClass.getPackage.getName + ".requests"))
 
   override def invokeRequest(requestData: JiraRequest)(implicit requestId: RequestId): UIO[Either[JiraError, String]] = {
     val u = requestData.render
