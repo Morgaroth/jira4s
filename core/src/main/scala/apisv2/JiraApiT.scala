@@ -52,7 +52,7 @@ object JiraApiT {
 
     def map[B](f: A => B): F[Either[JiraError, B]] = typeClassInstance.map[A, B](self)(f)
 
-    def flatMap[B](f: A => F[Either[JiraError, B]]): F[Either[JiraError, B]]               = typeClassInstance.flatMap[A, B](self)(f)
+    def flatMap[B](f: A => F[Either[JiraError, B]]): F[Either[JiraError, B]] = typeClassInstance.flatMap[A, B](self)(f)
     def subFlatMap[B](f: A => Either[JiraError, B]): F[Either[JiraError, B]] = typeClassInstance.subFlatMap(self)(f)
   }
 

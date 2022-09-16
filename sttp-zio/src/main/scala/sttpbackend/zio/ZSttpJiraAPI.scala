@@ -7,7 +7,7 @@ import query.syntax.JiraRequest
 import com.typesafe.scalalogging.{LazyLogging, Logger}
 import org.slf4j.LoggerFactory
 import sttp.client3.httpclient.zio.HttpClientZioBackend
-import sttp.client3.{SttpBackend, UriContext, basicRequest}
+import sttp.client3.{basicRequest, SttpBackend, UriContext}
 import zio.{Task, UIO, URLayer, ZIO, ZLayer}
 
 object ZSttpJiraAPI {
