@@ -4,16 +4,36 @@ import com.typesafe.config.Config
 
 import java.util.Base64
 
-case class JiraConfig(address: String, login: String, pass: String) {
-  assert(login.nonEmpty && pass.nonEmpty, "Jira credentials empty!")
+trait AuthMechanism extends Product with Serializable {
+  def authHeader: String
+}
+case class Basic(login: String, password: String) extends AuthMechanism {
+  assert(login.nonEmpty && password.nonEmpty, "Jira credentials empty!")
+  override val authHeader = s"Basic ${Base64.getEncoder.encodeToString(s"$login:$password".getBytes("utf-8"))}"
+}
+case class AccessToken(token: String) extends AuthMechanism {
+  override val authHeader = s"Bearer $token"
+}
 
-  def getBasicAuthHeaderValue = s"Basic ${Base64.getEncoder.encodeToString(s"$login:$pass".getBytes("utf-8"))}"
+case class JiraConfig(address: String, auth: AuthMechanism) {
+  val getAuthHeaderValue = auth.authHeader
 }
 
 object JiraConfig {
-  def fromConfig(config: Config) = new JiraConfig(
-    config.getString("address"),
-    config.getString("login"),
-    config.getString("password"),
-  )
+  def fromConfig(config: Config) = {
+    val authMechanism = if (config.hasPath("auth")) {
+      val authConfig = config.getConfig("auth")
+      authConfig.getString("type") match {
+        case "basic"        => Basic(authConfig.getString("login"), authConfig.getString("password"))
+        case "access-token" => AccessToken(authConfig.getString("access-token"))
+      }
+    } else {
+      Basic(config.getString("login"), config.getString("password"))
+    }
+    new JiraConfig(
+      config.getString("address"),
+      authMechanism,
+    )
+
+  }
 }

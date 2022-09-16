@@ -76,17 +76,17 @@ case class JiraRequest(
 
 case class RequestGenerator(cfg: JiraConfig) {
   def get(path: String): JiraRequest =
-    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Get, path, Vector.empty, None)
+    JiraRequest(cfg.address, cfg.getAuthHeaderValue, Methods.Get, path, Vector.empty, None)
 
   def get(path: String, query: JiraQuery*): JiraRequest =
-    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Get, path, query.toVector, None)
+    JiraRequest(cfg.address, cfg.getAuthHeaderValue, Methods.Get, path, query.toVector, None)
 
   def post(path: String, data: String): JiraRequest =
-    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Post, path, Vector.empty, Some(data))
+    JiraRequest(cfg.address, cfg.getAuthHeaderValue, Methods.Post, path, Vector.empty, Some(data))
 
   def put(path: String, data: String): JiraRequest =
-    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Put, path, Vector.empty, Some(data))
+    JiraRequest(cfg.address, cfg.getAuthHeaderValue, Methods.Put, path, Vector.empty, Some(data))
 
   def delete(path: String, query: JiraQuery*): JiraRequest =
-    JiraRequest(cfg.address, cfg.getBasicAuthHeaderValue, Methods.Delete, path, query.toVector, None)
+    JiraRequest(cfg.address, cfg.getAuthHeaderValue, Methods.Delete, path, query.toVector, None)
 }
