@@ -14,6 +14,14 @@ case class Basic(login: String, password: String) extends AuthMechanism {
 case class AccessToken(token: String) extends AuthMechanism {
   override val authHeader = s"Bearer $token"
 }
+object AuthMechanism {
+  def fromConfig(cfg: Config) = {
+    cfg.getString("type") match {
+      case "basic"        => Basic(cfg.getString("login"), cfg.getString("password"))
+      case "access-token" => AccessToken(cfg.getString("access-token"))
+    }
+  }
+}
 
 case class JiraConfig(address: String, auth: AuthMechanism) {
   val getAuthHeaderValue = auth.authHeader
@@ -22,11 +30,7 @@ case class JiraConfig(address: String, auth: AuthMechanism) {
 object JiraConfig {
   def fromConfig(config: Config) = {
     val authMechanism = if (config.hasPath("auth")) {
-      val authConfig = config.getConfig("auth")
-      authConfig.getString("type") match {
-        case "basic"        => Basic(authConfig.getString("login"), authConfig.getString("password"))
-        case "access-token" => AccessToken(authConfig.getString("access-token"))
-      }
+      AuthMechanism.fromConfig(config.getConfig("auth"))
     } else {
       Basic(config.getString("login"), config.getString("password"))
     }
